@@ -55,8 +55,7 @@ void detectAndDisplay( Mat frame )
 	equalizeHist( frame_gray, frame_gray );
 
 	// 2. Perform Viola-Jones Object Detection 
-	cascade.detectMultiScale( frame_gray, faces, 1.1, 1, 0|CV_HAAR_SCALE_IMAGE, Size(50, 50), Size(500,500) );
-
+    cascade.detectMultiScale( frame_gray, faces, 1.1, 1, 0|CV_HAAR_SCALE_IMAGE, Size(50, 50), Size(500,500) );
        // 3. Print number of Faces found
 	std::cout << faces.size() << std::endl;
 
@@ -65,5 +64,5 @@ void detectAndDisplay( Mat frame )
 	{
 		rectangle(frame, Point(faces[i].x, faces[i].y), Point(faces[i].x + faces[i].width, faces[i].y + faces[i].height), Scalar( 0, 255, 0 ), 2);
 	}
-
+	
 }
