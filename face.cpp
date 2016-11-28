@@ -15,12 +15,16 @@
 #include <iostream>
 #include <stdio.h>
 #include "hough.h"
+#include "ground.h"
 
 using namespace std;
 using namespace cv;
 
 /** Function Headers */
-void detectAndDisplay( Mat frame );
+void detectAndDisplay( Mat frame, vector<Rect> & ground );
+
+double calcf1(vector<Rect> &groundTruth, vector<Rect> &faces, double threshold, int trueNumberOfBoards);
+int truePositive(vector<Rect> &groundTruth, vector<Rect> &faces, double threshold);
 
 /** Global variables */
 String cascade_name = "../dartcascade/cascade.xml";
@@ -30,14 +34,17 @@ CascadeClassifier cascade;
 /** @function main */
 int main( int argc, const char** argv )
 {
-
     if( !cascade.load( cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
+
     Mat frame;
-       // 1. Read Input Image
-string name;
+    string name;
     stringstream ss;
-    frame = imread(argv[1],0);
-    /*for(int i=1;i<=16;i++){
+
+    frame = imread(argv[11], CV_LOAD_IMAGE_COLOR);
+    detectAndDisplay( frame, dartsgt[10] );
+    //frame = imread(argv[1],0);
+
+    /*for(int i=1;i<=16;i++){ // Use this loop to iterate through all of the training images.
 
         ss.str("");
         ss << i-1;
@@ -48,23 +55,12 @@ string name;
         imwrite( name, frame );
     }*/
 
-	// 2. Load the Strong Classifier in a structure called `Cascade'
-    //if( !cascade.load( cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
-
-	// 3. Detect Faces and Display Result
-    //detectAndDisplay( frame );
-
-	// 4. Save Result Image
-    //imwrite( "detected.jpg", frame );
-
-    //namedWindow("frame", WINDOW_AUTOSIZE);
-    //imshow("frame", frame);
 
 	return 0;
 }
 
 /** @function detectAndDisplay */
-void detectAndDisplay( Mat frame )
+void detectAndDisplay( Mat frame , vector<Rect> & ground)
 {
 	std::vector<Rect> faces;
 	Mat frame_gray;
@@ -82,6 +78,49 @@ void detectAndDisplay( Mat frame )
 	for( int i = 0; i < faces.size(); i++ )
 	{
 		rectangle(frame, Point(faces[i].x, faces[i].y), Point(faces[i].x + faces[i].width, faces[i].y + faces[i].height), Scalar( 0, 255, 0 ), 2);
-	}
-    printf("dickhead!\n");
+    }
+
+    //cout << "f1 for image 10 mate!" << calcf1(dartsgt[10], faces, 0.5, dartnumbersgt[10]);
+    //cout << "true positive for image 10 mate!" << truePositive(dartsgt[10], faces, 0.5);
+}
+
+double calcf1(vector<Rect> &groundTruth, vector<Rect> &faces, double threshold, int trueNumberOfBoards)
+{
+    int tp = truePositive(groundTruth,faces,threshold);
+
+    int fp = faces.size() - tp;
+
+    double precision = tp / (double)(tp + fp);
+    double recall =    tp / (double)(trueNumberOfBoards);
+
+    return 2 * (precision * recall) / (precision + recall);
+}
+
+int truePositive(vector<Rect> &groundTruth, vector<Rect> &faces, double threshold)
+{
+    int total = 0;
+    Rect intersection;
+    double ratio;
+
+    for (Rect g : groundTruth)
+    {
+
+        for(Rect f : faces)
+        {
+
+            intersection = g & f;
+
+            if(intersection.width && intersection.height)
+            {
+                ratio = (intersection.width*intersection.height)/(double)( g.width*g.height + f.width*f.height - (intersection.width*intersection.height));
+
+                if(ratio >= threshold)
+                {
+                    total++;
+                    break;
+                }
+            }
+        }
+    }
+    return total;
 }

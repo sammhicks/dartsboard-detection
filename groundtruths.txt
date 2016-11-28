@@ -1,0 +1,28 @@
+dart0 :(443,17),(605,183),162,167,640,426
+dart1 :(195,126),(393,326),198,200,550,421
+dart2 :(102,97),(192,187),90,90,640,360
+dart3 :(325,149),(391,221),66,72,500,375
+dart4 :(183,96),(393,296),210,200,700,700
+dart5 :(432,139),(542,249),110,110,800,677
+dart6 :(210,116),(275,181),65,65,500,393
+dart7 :(251,166),(401,316),150,150,700,644
+dart8 :(841,216),(960,338),119,122,1000,779
+       (64,250),(126,340),62,90,1000,779
+dart9 :(200,43),(435,279),235,236,468,590
+dart10:(90,101),(187,213),97,112,1000,725
+       (581,127),(642,212),61,85,1000,725
+       (912,147),(954,215),42,68,1000,725
+dart11:(174,102),(234,186),60,84,512,288
+ there is another dartboard slightly visible - havent included atm - maybe later
+dart12:(155,75),(219,213),64,138,454,303
+dart13:(273,119),(403,251),130,132,615,409
+dart14:(120,100),(246,227),126,127,1224,660
+       (987,94),(1113,221),126,127,1224,660
+dart15:(156,51),(285,196),129,145,700,501
+
+FORMAT:(top left x,y),(bottom right x,y),box width, box height,image width,image height
+i include image height because paint does y top down
+
+i feel the smaller the ground truth the more flexible the threshold
+we should see what happens when we retrain voila jones with a better dartboard image
+(and different dartboard images)

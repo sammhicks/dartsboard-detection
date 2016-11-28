@@ -9,9 +9,11 @@ PKGCONFIG += opencv
 
 HEADERS += \
     hough.h \
-    rescale.h
+    rescale.h \
+    ground.h
 
 SOURCES += \
     face.cpp \
     hough.cpp \
-    rescale.cpp
+    rescale.cpp \
+    ground.cpp
