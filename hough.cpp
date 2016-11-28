@@ -1,6 +1,6 @@
 #include "hough.h"
 
-void hough(cv::Mat mag, cv::Mat dir, cv::Mat &hough_space, double rmin, double rmax, double mag_threshold, double hough_threshold, std::vector<cv::Vec4d> &circles)
+std::vector<cv::Vec4d> hough(cv::Mat mag, cv::Mat dir, cv::Mat &hough_space, double rmin, double rmax, double mag_threshold, double hough_threshold)
 {
     int
             ymin = 0,
@@ -46,6 +46,16 @@ void hough(cv::Mat mag, cv::Mat dir, cv::Mat &hough_space, double rmin, double r
                     int &hough_space_val = hough_space.at<int>(r_index, b_index, a_index);
 
                     ++hough_space_val;
+
+                    b = y - r * sin(dir_val);
+                    a = x - r * cos(dir_val);
+
+                    b_index = static_cast<int>(lerp(de_lerp(b, bmin, bmax), b_index_min, b_index_max));
+                    a_index = static_cast<int>(lerp(de_lerp(a, amin, amax), a_index_min, a_index_max));
+
+                    hough_space_val = hough_space.at<int>(r_index, b_index, a_index);
+
+                    ++hough_space_val;
                 }
             }
         }
@@ -76,6 +86,8 @@ void hough(cv::Mat mag, cv::Mat dir, cv::Mat &hough_space, double rmin, double r
         }
     }
 
+    std::vector<cv::Vec4d> circles;
+
     for (int r_index = r_index_min; r_index < r_index_max; ++r_index)
     {
         for (int b_index = b_index_min; b_index < b_index_max; ++b_index)
@@ -98,4 +110,6 @@ void hough(cv::Mat mag, cv::Mat dir, cv::Mat &hough_space, double rmin, double r
             }
         }
     }
+
+    return circles;
 }
