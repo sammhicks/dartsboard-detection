@@ -24,7 +24,8 @@ using namespace cv;
 void detectAndDisplay( Mat frame, vector<Rect> & ground, int trueNumber );
 
 double calcf1(vector<Rect> &groundTruth, vector<Rect> &faces, double threshold, int trueNumberOfBoards);
-int truePositive(vector<Rect> &groundTruth, vector<Rect> &faces, double threshold);
+void truePositive(vector<Rect> &groundTruth, vector<Rect> &faces, double threshold, int & total, int & othertruedetections);
+bool centresThresh(Rect g, Rect f, double thresh);
 
 /** Global variables */
 String cascade_name = "../dartcascade/cascade.xml";
@@ -77,47 +78,63 @@ void detectAndDisplay( Mat frame , vector<Rect> & ground, int trueNumber)
 	{
 		rectangle(frame, Point(faces[i].x, faces[i].y), Point(faces[i].x + faces[i].width, faces[i].y + faces[i].height), Scalar( 0, 255, 0 ), 2);
     }
-    calcf1(ground, faces, 0.4, trueNumber);
+    cout << "f1 score: " << calcf1(ground, faces, 0.5, trueNumber);
 }
 
 double calcf1(vector<Rect> &groundTruth, vector<Rect> &faces, double threshold, int trueNumberOfBoards)
 {
-    int tp = truePositive(groundTruth,faces,threshold);
+    int tp = 0;
+    int othertruedetections = 0;
+    truePositive(groundTruth,faces,threshold, tp, othertruedetections);
 
     if(!tp) return 0.0;
 
-    int fp = faces.size() - tp;
+    int fp = faces.size() - tp - othertruedetections;
 
     double precision = tp / (double)(tp + fp);
     double recall =    tp / (double)(trueNumberOfBoards);
     return 2 * (precision * recall) / (precision + recall);
 }
 
-int truePositive(vector<Rect> &groundTruth, vector<Rect> &faces, double threshold)
+void truePositive(vector<Rect> &groundTruth, vector<Rect> &faces, double threshold, int & total, int & othertrue)
 {
-    int total = 0;
     Rect intersection;
     double ratio;
 
     for (Rect g : groundTruth)
     {
-rectangle(frame, Point(g.x, g.y), Point(g.x + g.width, g.y + g.height), Scalar( 255, 255, 255 ), 2);
+        int extra = 0;
+        rectangle(frame, Point(g.x, g.y), Point(g.x + g.width, g.y + g.height), Scalar( 255, 255, 255 ), 2);
         for(Rect f : faces)
         {
-
             intersection = g & f;
 
             if(intersection.width && intersection.height)
             {
                 ratio = (intersection.width*intersection.height)/(double)( g.width*g.height + f.width*f.height - (intersection.width*intersection.height));
-                if(ratio >= threshold)
+                bool isCentreFine = centresThresh(g,f,threshold);
+                if(ratio >= threshold && !extra && isCentreFine)
                 {
                     rectangle(frame, Point(f.x, f.y), Point(f.x + f.width, f.y + f.height), Scalar( 0, 0, 255 ), 2);
                     total++;
-                    //break;
+                    extra++;
+                }
+                else if(ratio >= threshold && isCentreFine)
+                {
+                    extra++;
                 }
             }
         }
+        if(extra) othertrue += extra-1;
     }
-    return total;
+}
+
+bool centresThresh(Rect g, Rect f, double thresh){
+    Point gc(g.x + g.width/2, g.y + g.height/2);
+    Point fc(f.x + f.width/2, f.y + f.height/2);
+
+    double dx = (fc.x - gc.x) / g.width;
+    double dy = (fc.y - gc.y) / g.height;
+
+    return (dx * dx + dy * dy) < (thresh * thresh);
 }
