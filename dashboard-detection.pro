@@ -11,11 +11,13 @@ HEADERS += \
     hough.h \
     rescale.h \
     sobel.h \
-    filter_list.h
+    filter_list.h \
+    namedimage.h
 
 SOURCES += \
     face.cpp \
     hough.cpp \
     rescale.cpp \
     sobel.cpp \
-    filter_list.cpp
+    filter_list.cpp \
+    namedimage.cpp

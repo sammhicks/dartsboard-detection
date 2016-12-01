@@ -1,6 +1,6 @@
 #include "hough.h"
 
-std::vector<cv::Vec4d> hough(cv::Mat mag, cv::Mat dir, cv::Mat &hough_space, double rmin, double rmax, double mag_threshold, double hough_threshold)
+std::vector<cv::Vec4d> hough(cv::Mat mag, cv::Mat dir, cv::Mat &thresholded_mag, cv::Mat &hough_space, double rmin, double rmax, double mag_threshold, double hough_threshold)
 {
     int
             ymin = 0,
@@ -20,6 +20,8 @@ std::vector<cv::Vec4d> hough(cv::Mat mag, cv::Mat dir, cv::Mat &hough_space, dou
             amin = xmin - rmax,
             amax = xmax + rmax;
 
+    thresholded_mag = cv::Mat(mag.size(), CV_8U, cv::Scalar());
+
     for (int y = ymin; y < ymax; ++y)
     {
         for (int x = xmin; x < xmax; ++x)
@@ -32,6 +34,8 @@ std::vector<cv::Vec4d> hough(cv::Mat mag, cv::Mat dir, cv::Mat &hough_space, dou
 
                 if (mag_val > mag_threshold)
                 {
+                    thresholded_mag.at<uint8_t>(y, x) = 255;
+
                     auto dir_val = dir.at<double>(y, x);
 
                     double

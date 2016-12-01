@@ -1,5 +1,7 @@
 #pragma once
 
-#include "opencv/cv.h"
+#include <opencv2/opencv.hpp>
+
+#include "rescale.h"
 
 void sobel(cv::Mat &image, cv::Mat &mag, cv::Mat &dir, int sobel_size);
