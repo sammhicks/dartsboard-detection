@@ -45,10 +45,10 @@ int main( int argc, const char** argv )
 
         ss.str("");
         ss << i-1;
-        name = "THRESH=0.4"+ss.str()+".jpg";
+        name = "THRESH=0.5"+ss.str()+".jpg";
         //cout << name;
         frame = imread(argv[i], CV_LOAD_IMAGE_COLOR);
-        //cout << "dart" << i-1 << ".jpg f1/tp: ";
+        cout << "-----------dart " << i-1 << "--------------" << endl;
         detectAndDisplay( frame, dartsgt[i-1], dartnumbersgt[i-1] );
         imwrite( name, frame );
     }
@@ -77,7 +77,7 @@ void detectAndDisplay( Mat frame , vector<Rect> & ground, int trueNumber)
 	{
 		rectangle(frame, Point(faces[i].x, faces[i].y), Point(faces[i].x + faces[i].width, faces[i].y + faces[i].height), Scalar( 0, 255, 0 ), 2);
     }
-    cout << calcf1(ground, faces, 0.5, trueNumber) << "/" << truePositive(ground, faces, 0.5) << endl;
+    calcf1(ground, faces, 0.4, trueNumber);
 }
 
 double calcf1(vector<Rect> &groundTruth, vector<Rect> &faces, double threshold, int trueNumberOfBoards)
@@ -90,7 +90,6 @@ double calcf1(vector<Rect> &groundTruth, vector<Rect> &faces, double threshold, 
 
     double precision = tp / (double)(tp + fp);
     double recall =    tp / (double)(trueNumberOfBoards);
-
     return 2 * (precision * recall) / (precision + recall);
 }
 
@@ -113,8 +112,7 @@ rectangle(frame, Point(g.x, g.y), Point(g.x + g.width, g.y + g.height), Scalar( 
                 ratio = (intersection.width*intersection.height)/(double)( g.width*g.height + f.width*f.height - (intersection.width*intersection.height));
                 if(ratio >= threshold)
                 {
-                    rectangle(frame, Point(intersection.x, intersection.y), Point(intersection.x + intersection.width, intersection.y + intersection.height), Scalar( 0, 0, 255 ), 2);
-                    cout << "ratio: " << ratio;
+                    rectangle(frame, Point(f.x, f.y), Point(f.x + f.width, f.y + f.height), Scalar( 0, 0, 255 ), 2);
                     total++;
                     //break;
                 }
