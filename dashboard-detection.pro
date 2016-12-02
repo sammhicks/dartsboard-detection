@@ -8,12 +8,20 @@ CONFIG += link_pkgconfig
 PKGCONFIG += opencv
 
 HEADERS += \
-    hough.h \
     rescale.h \
+    sobel.h \
+    filter_list.h \
+    namedimage.h \
+    hough.h \
+    dynamic_threshold.h
     ground.h
 
 SOURCES += \
     face.cpp \
-    hough.cpp \
     rescale.cpp \
+    sobel.cpp \
+    filter_list.cpp \
+    namedimage.cpp \
+    hough.cpp \
+    dynamic_threshold.cpp
     ground.cpp

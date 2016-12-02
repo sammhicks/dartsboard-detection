@@ -10,9 +10,9 @@ void sobel(cv::Mat &image, cv::Mat &mag, cv::Mat &dir, int sobel_size)
     cv::Mat unscaled_mag(image.size(), CV_64F);
     dir = cv::Mat(image.size(), CV_64F);
 
-    for (int row = 0; row < mag.rows; ++row)
+    for (int row = 0; row < image.rows; ++row)
     {
-        for (int col = 0; col < mag.cols; ++col)
+        for (int col = 0; col < image.cols; ++col)
         {
             auto dx_val = dx.at<double>(row, col);
             auto dy_val = dy.at<double>(row, col);
@@ -30,9 +30,9 @@ void sobel(cv::Mat &image, cv::Mat &mag, cv::Mat &dir, int sobel_size)
 
     mag = cv::Mat(unscaled_mag.size(), CV_8U);
 
-    for (int row = 0; row < mag.rows; ++row)
+    for (int row = 0; row < image.rows; ++row)
     {
-        for (int col = 0; col < mag.cols; ++col)
+        for (int col = 0; col < image.cols; ++col)
         {
             auto mag_val = unscaled_mag.at<double>(row, col);
             auto &scaled_mag_val = mag.at<uint8_t>(row, col);
