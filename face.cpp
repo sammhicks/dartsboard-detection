@@ -38,9 +38,6 @@ Mat unchanged;
 /** @function main */
 int main( int argc, const char** argv )
 {
-    for (int image_num = 1; image_num < argc; ++image_num)
-    {
-        cv::Mat source = cv::imread(argv[image_num], CV_LOAD_IMAGE_GRAYSCALE);
 
     //Mat frame;  //Frame is now global so it can be easily accessed inside of the other functions...
     string name;
@@ -58,7 +55,13 @@ int main( int argc, const char** argv )
         detectAndDisplay( frame, dartsgt[i-1], dartnumbersgt[i-1] );
         imwrite( name, frame );
     }
-//imwrite( "TEST.jpg", frame );
+
+
+    //////HOUGH SPACE TESTING LOOP...
+    for (int image_num = 1; image_num < argc; ++image_num)
+    {
+        cv::Mat source = cv::imread(argv[image_num], CV_LOAD_IMAGE_GRAYSCALE);
+
         ss << image_num-1;
         name = "circles10-200-0.8"+ss.str()+".jpg";
 
