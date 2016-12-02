@@ -22,6 +22,7 @@ using namespace cv;
 
 /** Function Headers */
 void detectAndDisplay( Mat frame, vector<Rect> & ground, int trueNumber );
+void pruneFaces(vector<Rect> &faces, vector<Rect> &prunedFaces, double threshold);
 
 double calcf1(vector<Rect> &groundTruth, vector<Rect> &faces, double threshold, int trueNumberOfBoards);
 void truePositive(vector<Rect> &groundTruth, vector<Rect> &faces, double threshold, int & total, int & othertruedetections);
@@ -31,6 +32,7 @@ bool centresThresh(Rect g, Rect f, double thresh);
 String cascade_name = "../dartcascade/cascade.xml";
 CascadeClassifier cascade;
 Mat frame;
+Mat unchanged;
 
 
 /** @function main */
@@ -46,9 +48,10 @@ int main( int argc, const char** argv )
 
         ss.str("");
         ss << i-1;
-        name = "THRESH=0.5"+ss.str()+".jpg";
+        name = "pruneFACEStest"+ss.str()+".jpg";
         //cout << name;
         frame = imread(argv[i], CV_LOAD_IMAGE_COLOR);
+        unchanged = frame.clone();
         cout << "-----------dart " << i-1 << "--------------" << endl;
         detectAndDisplay( frame, dartsgt[i-1], dartnumbersgt[i-1] );
         imwrite( name, frame );
@@ -62,6 +65,7 @@ int main( int argc, const char** argv )
 void detectAndDisplay( Mat frame , vector<Rect> & ground, int trueNumber)
 {
 	std::vector<Rect> faces;
+    std::vector<Rect> prunedFaces;
 	Mat frame_gray;
 
 	// 1. Prepare Image by turning it into Grayscale and normalising lighting
@@ -70,15 +74,15 @@ void detectAndDisplay( Mat frame , vector<Rect> & ground, int trueNumber)
 
 	// 2. Perform Viola-Jones Object Detection 
     cascade.detectMultiScale( frame_gray, faces, 1.1, 1, 0|CV_HAAR_SCALE_IMAGE, Size(50, 50), Size(500,500) );
-       // 3. Print number of Faces found
-    //std::cout << faces.size() << std::endl;
+
+    pruneFaces(faces, prunedFaces, 0.75);
 
        // 4. Draw box around faces found
-	for( int i = 0; i < faces.size(); i++ )
+    for( int i = 0; i < prunedFaces.size(); i++ )
 	{
-		rectangle(frame, Point(faces[i].x, faces[i].y), Point(faces[i].x + faces[i].width, faces[i].y + faces[i].height), Scalar( 0, 255, 0 ), 2);
+        rectangle(frame, Point(prunedFaces[i].x, prunedFaces[i].y), Point(prunedFaces[i].x + prunedFaces[i].width, prunedFaces[i].y + prunedFaces[i].height), Scalar( 0, 255, 0 ), 2);
     }
-    cout << "f1 score: " << calcf1(ground, faces, 0.5, trueNumber);
+    cout << "f1 score: " << calcf1(ground, prunedFaces, 0.5, trueNumber);
 }
 
 double calcf1(vector<Rect> &groundTruth, vector<Rect> &faces, double threshold, int trueNumberOfBoards)
@@ -94,6 +98,29 @@ double calcf1(vector<Rect> &groundTruth, vector<Rect> &faces, double threshold, 
     double precision = tp / (double)(tp + fp);
     double recall =    tp / (double)(trueNumberOfBoards);
     return 2 * (precision * recall) / (precision + recall);
+}
+
+void pruneFaces(vector<Rect> &faces, vector<Rect> &prunedFaces, double threshold)
+{
+    Mat tempMat;
+    Mat frame_gray;
+    cvtColor( unchanged, frame_gray, CV_BGR2GRAY ); //convert the original image to grayscale
+
+    Scalar mean, stddev;
+    meanStdDev(frame_gray, mean, stddev);  //find the mean and stddev of the image
+    double frameMean = mean[0];
+    double frameSTD = stddev[0];
+
+    for( Rect f : faces)
+    {
+        tempMat = frame_gray(Rect(f.x, f.y, f.width, f.height) );
+        meanStdDev(tempMat, mean, stddev);
+
+        if(stddev[0] /frameSTD > threshold){ //IF the proportion of the stddev of the detection to the stddev of the whole image is above the threshold then it is considered a valid detection
+            rectangle(frame, Point(f.x, f.y), Point(f.x + f.width, f.y + f.height), Scalar( 0, 0, 0 ), 2);
+            prunedFaces.push_back(Rect(f.x, f.y, f.width, f.height));
+        }
+    }
 }
 
 void truePositive(vector<Rect> &groundTruth, vector<Rect> &faces, double threshold, int & total, int & othertrue)
@@ -117,7 +144,7 @@ void truePositive(vector<Rect> &groundTruth, vector<Rect> &faces, double thresho
                 {
                     rectangle(frame, Point(f.x, f.y), Point(f.x + f.width, f.y + f.height), Scalar( 0, 0, 255 ), 2);
                     total++;
-                    extra++;
+                    extra++; //should this be here?!?!?!?!? maybe not?!?!?!?!
                 }
                 else if(ratio >= threshold && isCentreFine)
                 {
