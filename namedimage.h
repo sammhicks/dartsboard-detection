@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include <opencv2/opencv.hpp>
@@ -9,10 +10,10 @@ class NamedImage
 {
 private:
     cv::Mat &image;
-    const cv::string &name;
+    std::string name;
 
 public:
-    NamedImage(cv::Mat &image, const cv::string &name);
+    NamedImage(cv::Mat &image, std::string name);
 
     static void showImage(NamedImage image);
     static void showImages(std::vector<NamedImage> &images);

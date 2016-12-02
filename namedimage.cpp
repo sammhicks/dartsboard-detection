@@ -1,6 +1,6 @@
 #include "namedimage.h"
 
-NamedImage::NamedImage(cv::Mat &image, const cv::string &name):
+NamedImage::NamedImage(cv::Mat &image, std::__cxx11::string name):
     image(image), name(name)
 {
 }
@@ -17,7 +17,6 @@ void NamedImage::showImages(std::vector<NamedImage> &images)
     for (NamedImage &image: images)
     {
         cv::namedWindow(image.name);
-
         cv::imshow(image.name, image.image);
     }
 
