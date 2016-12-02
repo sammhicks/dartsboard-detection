@@ -18,6 +18,7 @@
 #include "hough.h"
 #include "namedimage.h"
 #include "sobel.h"
+#include <string>
 
 /** Function Headers */
 void detectAndDisplay( cv::Mat frame );
@@ -25,7 +26,8 @@ void detectAndDisplay( cv::Mat frame );
 /** Global variables */
 cv::String cascade_name = "../dartcascade/cascade.xml";
 cv::CascadeClassifier cascade;
-
+std::stringstream ss;
+std::string name;
 
 /** @function main */
 int main( int argc, const char** argv )
@@ -34,17 +36,21 @@ int main( int argc, const char** argv )
     {
         cv::Mat source = cv::imread(argv[image_num], CV_LOAD_IMAGE_GRAYSCALE);
 
+        ss.str("");
+        ss << image_num-1;
+        name = "circles10-200-0.8"+ss.str()+".jpg";
+
         cv::Mat mag, dir;
 
         sobel(source, mag, dir, 5);
 
-        NamedImage::showImage(NamedImage(mag, "Mag"));
+        //NamedImage::showImage(NamedImage(mag, "Mag"));
 
         cv:: Mat thresholded_mag;
 
         dynamic_threshold(mag, thresholded_mag, 100.0, 255.0, CV_8U);
 
-        NamedImage::showImage(NamedImage(thresholded_mag, "Thresholded Mag"));
+        //NamedImage::showImage(NamedImage(thresholded_mag, "Thresholded Mag"));
 
         // Remove lines
 
@@ -71,13 +77,13 @@ int main( int argc, const char** argv )
             cv::line(thresholded_mag, ref - offset, ref + offset, cv::Scalar(0l), 7, CV_AA);
         }
 
-        NamedImage::showImage(NamedImage(thresholded_mag, "Lines Removed"));
+        //NamedImage::showImage(NamedImage(thresholded_mag, "Lines Removed"));
 
         std::vector<int> hough_space_size = {64, 256, 256};
 
         cv::Mat hough_space(hough_space_size.size(), &(hough_space_size[0]), CV_32S, cv::Scalar(0));
 
-        auto circles = hough_circle(mag, dir, hough_space, 10, 200, 0.85);
+        auto circles = hough_circle(mag, dir, hough_space, 10, 200, 0.8);
 
         auto filtered_circles = filter_list(circles, 1.0);
 
@@ -95,7 +101,9 @@ int main( int argc, const char** argv )
             cv::circle(circles_with_overlay, cv::Point(circle[0], circle[1]), circle[2], cvScalar(0, 255, 0));
         }
 
-        NamedImage::showImage(NamedImage(circles_with_overlay, "Circles"));
+        //NamedImage::showImage(NamedImage(circles_with_overlay, "Circles"));
+
+        imwrite(name, circles_with_overlay);
     }
 
     return 0;

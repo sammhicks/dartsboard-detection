@@ -102,7 +102,7 @@ std::vector<cv::Vec3d> hough_line(cv::Mat mag, cv::Mat dir, cv::Mat &hough_space
         }
     }
 
-    NamedImage::showImage(NamedImage(hough_image, "Hough Space"));
+    //NamedImage::showImage(NamedImage(hough_image, "Hough Space"));
 
     std::vector<cv::Vec3d> lines;
 
