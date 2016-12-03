@@ -35,13 +35,14 @@ CascadeClassifier cascade;
 Mat frame;
 Mat unchanged;
 
+
 /** @function main */
 int main( int argc, const char** argv )
 {
 
     //Mat frame;  //Frame is now global so it can be easily accessed inside of the other functions...
-    string name;
-    stringstream ss;
+    std::string name;
+    std::stringstream ss;
 
     for(int i=1;i<=16;i++){ // Use this loop to iterate through all of the training images.
 
@@ -51,7 +52,7 @@ int main( int argc, const char** argv )
         //cout << name;
         frame = imread(argv[i], CV_LOAD_IMAGE_COLOR);
         unchanged = frame.clone();
-        cout << "-----------dart " << i-1 << "--------------" << endl;
+        std::cout << "-----------dart " << i-1 << "--------------" << std::endl;
         detectAndDisplay( frame, dartsgt[i-1], dartnumbersgt[i-1] );
         imwrite( name, frame );
     }
@@ -155,7 +156,7 @@ void detectAndDisplay( Mat frame , vector<Rect> & ground, int trueNumber)
 	{
         rectangle(frame, Point(prunedFaces[i].x, prunedFaces[i].y), Point(prunedFaces[i].x + prunedFaces[i].width, prunedFaces[i].y + prunedFaces[i].height), Scalar( 0, 255, 0 ), 2);
     }
-    cout << "f1 score: " << calcf1(ground, prunedFaces, 0.5, trueNumber);
+    std::cout << "f1 score: " << calcf1(ground, prunedFaces, 0.5, trueNumber) << std::endl;
 }
 
 double calcf1(vector<Rect> &groundTruth, vector<Rect> &faces, double threshold, int trueNumberOfBoards)
