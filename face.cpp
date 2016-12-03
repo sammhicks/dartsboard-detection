@@ -24,6 +24,14 @@
 
 const String CASCADE_NAME = "../dartcascade/cascade.xml";
 
+const double HOUGH_RMIN = 10;
+const double HOUGH_RMAX = 200;
+const double HOUGH_CIRCLE_THRESHOLD = 0.8;
+const double FILTER_MINDISTANCE = 1.0;
+const double HOUGH_LINE_THRESHOLD = 0.8;
+const double HOUGH_LINE_DIRRANGE = 20.0 * M_PI / 180.0;
+
+
 /** @function main */
 int main( int argc, const char** argv )
 {
@@ -32,7 +40,7 @@ int main( int argc, const char** argv )
     if (!cascade.load(CASCADE_NAME)) {
         printf("--(!)Error loading\n"); return EXIT_FAILURE;
     };
-
+/*
     for (int imageNum = 1; imageNum < argc; ++imageNum) {
         int imageID = imageNum - 1;
 
@@ -47,17 +55,17 @@ int main( int argc, const char** argv )
         std::stringstream name;
         name << "pruneFACEStest" << imageID << ".jpg";
 
-        imwrite(name.str(), input);
+        //imwrite(name.str(), input);
     }
-
+*/
 
     //////HOUGH SPACE TESTING LOOP...
-   /* for
+    for (int imageNum = 1; imageNum < argc; ++imageNum)
     {
-        cv::Mat source = cv::imread(argv[image_num], CV_LOAD_IMAGE_GRAYSCALE);
+        cv::Mat source = cv::imread(argv[imageNum], CV_LOAD_IMAGE_GRAYSCALE);
 
-        ss << image_num-1;
-        name = "circles10-200-0.8"+ss.str()+".jpg";
+        std::stringstream name;
+        name << "circles10-200-0.8" << imageNum-1 << ".jpg";
 
         cv::Mat mag, dir;
 
@@ -67,7 +75,7 @@ int main( int argc, const char** argv )
 
         cv:: Mat thresholded_mag;
 
-        dynamic_threshold(mag, thresholded_mag, 100.0, 255.0, CV_8U);
+        dynamicThreshold(mag, thresholded_mag, 100.0, 255.0, CV_8U);
 
         //NamedImage::showImage(NamedImage(thresholded_mag, "Thresholded Mag"));
 
@@ -75,7 +83,7 @@ int main( int argc, const char** argv )
 
         cv::Mat line_hough_space(512, 512, CV_32S, cv::Scalar(0));
 
-        std::vector<cv::Vec3d> lines = hough_line(thresholded_mag, dir, line_hough_space, 0.8, 20.0 * M_PI / 180.0);
+        std::vector<cv::Vec3d> lines = houghLine(thresholded_mag, dir, line_hough_space, HOUGH_LINE_THRESHOLD, HOUGH_LINE_DIRRANGE);
 
         for(cv::Vec3d &line: lines)
         {
@@ -102,9 +110,9 @@ int main( int argc, const char** argv )
 
         cv::Mat hough_space(hough_space_size.size(), &(hough_space_size[0]), CV_32S, cv::Scalar(0));
 
-        auto circles = hough_circle(mag, dir, hough_space, 10, 200, 0.8);
+        auto circles = houghCircle(mag, dir, hough_space, HOUGH_RMIN, HOUGH_RMAX, HOUGH_CIRCLE_THRESHOLD);
 
-        auto filtered_circles = filter_list(circles, 1.0);
+        auto filtered_circles = filterList(circles, FILTER_MINDISTANCE);
 
         cv::Mat circles_with_overlay(source.size(), CV_8UC3);
 
@@ -122,8 +130,8 @@ int main( int argc, const char** argv )
 
         //NamedImage::showImage(NamedImage(circles_with_overlay, "Circles"));
 
-        imwrite(name, circles_with_overlay);
-    } */
+        imwrite(name.str(), circles_with_overlay);
+    }
 
     return 0;
 }

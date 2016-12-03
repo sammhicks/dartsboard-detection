@@ -35,7 +35,7 @@ void pruneFaces(cv::Mat &input, std::vector<cv::Rect> &faces, std::vector<cv::Re
         cv::meanStdDev(input(cv::Rect(f.x, f.y, f.width, f.height)), mean, stddev);
 
         if(stddev[0] /frameSTD > threshold){ //IF the proportion of the stddev of the detection to the stddev of the whole image is above the threshold then it is considered a valid detection
-            cv::rectangle(input, cv::Point(f.x, f.y), cv::Point(f.x + f.width, f.y + f.height), cv::Scalar( 0, 0, 0 ), 2);
+            //cv::rectangle(input, cv::Point(f.x, f.y), cv::Point(f.x + f.width, f.y + f.height), cv::Scalar( 0, 0, 0 ), 2);
             prunedFaces.push_back(cv::Rect(f.x, f.y, f.width, f.height));
         }
     }
