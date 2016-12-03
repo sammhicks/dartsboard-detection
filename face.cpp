@@ -22,7 +22,7 @@
 #include "ground.h"
 
 /** Function Headers */
-void detectAndDisplay( cv::Mat frame, vector<cv::Rect> & ground, int trueNumber );
+void detectAndDisplay( cv::Mat frame, vector<cv::Rect> & ground, int trueNumber, std::vector<cv::Rect> & prunedFaces  );
 void pruneFaces(vector<cv::Rect> &faces, vector<cv::Rect> &prunedFaces, double threshold);
 
 double calcf1(vector<cv::Rect> &groundTruth, vector<cv::Rect> &faces, double threshold, int trueNumberOfBoards);
@@ -51,7 +51,9 @@ int main( int argc, const char** argv )
     std::string name;
     std::stringstream ss;
 
+
     for(int i=1;i<=16;i++){ // Use this loop to iterate through all of the training images.
+        std::vector<cv::Rect> prunedFaceDetections;
 
         ss.str("");
         ss << i-1;
@@ -63,7 +65,7 @@ int main( int argc, const char** argv )
         unchanged = frame.clone();
 
         std::cout << "-----------dart " << i-1 << "--------------" << std::endl;
-        detectAndDisplay( frame, dartsgt[i-1], dartnumbersgt[i-1] );
+        detectAndDisplay( frame, dartsgt[i-1], dartnumbersgt[i-1], prunedFaceDetections );
         imwrite( name, frame );
     }
 
@@ -146,10 +148,9 @@ int main( int argc, const char** argv )
 }
 
 /** @function detectAndDisplay */
-void detectAndDisplay( cv::Mat frame , vector<cv::Rect> & ground, int trueNumber)
+void detectAndDisplay( cv::Mat frame , vector<cv::Rect> & ground, int trueNumber, std::vector<cv::Rect> & prunedFaces )
 {
     std::vector<cv::Rect> faces;
-    std::vector<cv::Rect> prunedFaces;
     cv::Mat frame_gray;
 
     // 1. Prepare Image by turning it into Grayscale and normalising lighting
