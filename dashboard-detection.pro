@@ -14,7 +14,9 @@ HEADERS += \
     hough.h \
     ground.h \
     dynamicthreshold.h \
-    filterlist.h
+    filterlist.h \
+    detectanddisplay.h \
+    calcf1.h
 
 SOURCES += \
     face.cpp \
@@ -24,4 +26,6 @@ SOURCES += \
     hough.cpp \
     ground.cpp \
     dynamicthreshold.cpp \
-    filterlist.cpp
+    filterlist.cpp \
+    detectanddisplay.cpp \
+    calcf1.cpp
