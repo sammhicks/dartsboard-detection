@@ -13,7 +13,7 @@ HEADERS += \
     filter_list.h \
     namedimage.h \
     hough.h \
-    dynamic_threshold.h
+    dynamic_threshold.h \
     ground.h
 
 SOURCES += \
@@ -23,5 +23,5 @@ SOURCES += \
     filter_list.cpp \
     namedimage.cpp \
     hough.cpp \
-    dynamic_threshold.cpp
+    dynamic_threshold.cpp \
     ground.cpp
