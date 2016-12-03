@@ -5,7 +5,7 @@ double calcf1(std::vector<cv::Rect> &groundTruth, std::vector<cv::Rect> &faces, 
     int tp = 0;
     int othertruedetections = 0;
     truePositive(groundTruth, faces, tp, othertruedetections);
-    std::cout << "true positive score: " << tp << std::endl;
+    //std::cout << "true positive score: " << tp << std::endl;
 
     if(!tp) return 0.0;
 
@@ -38,7 +38,7 @@ void truePositive(std::vector<cv::Rect> &groundTruth, std::vector<cv::Rect> &fac
                 {
                     if (extra == 0)
                     {
-                        std::cout << "We're in here so fucking tp should definitely get incremented!" << std::endl;
+                        //std::cout << "We're in here so fucking tp should definitely get incremented!" << std::endl;
                         total++;
                     }
 

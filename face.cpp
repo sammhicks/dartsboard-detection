@@ -36,9 +36,9 @@ int main( int argc, const char** argv )
     for (int imageNum = 1; imageNum < argc; ++imageNum) {
         int imageID = imageNum - 1;
 
-        cv::Mat input = imread(argv[imageNum], CV_LOAD_IMAGE_GRAYSCALE);
+        cv::Mat input = imread(argv[imageNum], CV_LOAD_IMAGE_COLOR);
 
-        std::cout << "-----------dart " << imageID << "--------------" << std::endl;
+        //std::cout << "-----------dart " << imageID << "--------------" << std::endl;
 
         std::vector<cv::Rect> prunedFaceDetections;
 

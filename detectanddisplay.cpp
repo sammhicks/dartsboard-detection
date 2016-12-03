@@ -11,15 +11,16 @@ void detectAndDisplay(cv::Mat &input, cv::CascadeClassifier &cascade, std::vecto
 
     // 2. Perform Viola-Jones Object Detection
     cascade.detectMultiScale( frame_gray, faces, 1.1, 1, 0|CV_HAAR_SCALE_IMAGE, cv::Size(50, 50), cv::Size(500,500) );
-    std::cout << faces.size();
+    //std::cout << faces.size();
     pruneFaces(input, faces, prunedFaces, PRUNING_THRESHOLD);
 
        // 4. Draw box around faces found
-    for( unsigned int i = 0; i < prunedFaces.size(); i++ )
+    /*for( unsigned int i = 0; i < prunedFaces.size(); i++ )
     {
         cv::rectangle(input, cv::Point(prunedFaces[i].x, prunedFaces[i].y), cv::Point(prunedFaces[i].x + prunedFaces[i].width, prunedFaces[i].y + prunedFaces[i].height), cv::Scalar( 0, 255, 0 ), 2);
-    }
-    std::cout << "f1 score: " << calcf1(ground, faces, trueNumber) << std::endl;
+    }*/
+    //std::cout << "f1 score: " << calcf1(ground, faces, trueNumber) << std::endl;
+    std::cout << calcf1(ground, faces, trueNumber) << std::endl;
 }
 
 void pruneFaces(cv::Mat &input, std::vector<cv::Rect> &faces, std::vector<cv::Rect> &prunedFaces, double threshold)
