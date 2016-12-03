@@ -22,18 +22,20 @@
 #include "ground.h"
 
 /** Function Headers */
-void detectAndDisplay( Mat frame, vector<Rect> & ground, int trueNumber );
-void pruneFaces(vector<Rect> &faces, vector<Rect> &prunedFaces, double threshold);
+void detectAndDisplay( cv::Mat frame, vector<cv::Rect> & ground, int trueNumber );
+void pruneFaces(vector<cv::Rect> &faces, vector<cv::Rect> &prunedFaces, double threshold);
 
-double calcf1(vector<Rect> &groundTruth, vector<Rect> &faces, double threshold, int trueNumberOfBoards);
-void truePositive(vector<Rect> &groundTruth, vector<Rect> &faces, double threshold, int & total, int & othertruedetections);
-bool centresThresh(Rect g, Rect f, double thresh);
+double calcf1(vector<cv::Rect> &groundTruth, vector<cv::Rect> &faces, double threshold, int trueNumberOfBoards);
+void truePositive(vector<cv::Rect> &groundTruth, vector<cv::Rect> &faces, double threshold, int & total, int & othertruedetections);
+bool centresThresh(cv::Rect g, cv::Rect f, double thresh);
 
 /** Global variables */
 String cascade_name = "../dartcascade/cascade.xml";
 CascadeClassifier cascade;
-Mat frame;
-Mat unchanged;
+cv::Mat frame;
+cv::Mat unchanged;
+
+//#define PRUNING_THRESHOLD 0.5
 
 
 /** @function main */
@@ -48,10 +50,13 @@ int main( int argc, const char** argv )
 
         ss.str("");
         ss << i-1;
+
         name = "pruneFACEStest"+ss.str()+".jpg";
+
         //cout << name;
         frame = imread(argv[i], CV_LOAD_IMAGE_COLOR);
         unchanged = frame.clone();
+
         std::cout << "-----------dart " << i-1 << "--------------" << std::endl;
         detectAndDisplay( frame, dartsgt[i-1], dartnumbersgt[i-1] );
         imwrite( name, frame );
@@ -59,7 +64,7 @@ int main( int argc, const char** argv )
 
 
     //////HOUGH SPACE TESTING LOOP...
-    for (int image_num = 1; image_num < argc; ++image_num)
+   /* for (int image_num = 1; image_num < argc; ++image_num)
     {
         cv::Mat source = cv::imread(argv[image_num], CV_LOAD_IMAGE_GRAYSCALE);
 
@@ -130,40 +135,41 @@ int main( int argc, const char** argv )
         //NamedImage::showImage(NamedImage(circles_with_overlay, "Circles"));
 
         imwrite(name, circles_with_overlay);
-    }
+    } */
 
     return 0;
 }
 
 /** @function detectAndDisplay */
-void detectAndDisplay( Mat frame , vector<Rect> & ground, int trueNumber)
+void detectAndDisplay( cv::Mat frame , vector<cv::Rect> & ground, int trueNumber)
 {
-	std::vector<Rect> faces;
-    std::vector<Rect> prunedFaces;
-	Mat frame_gray;
+    std::vector<cv::Rect> faces;
+    std::vector<cv::Rect> prunedFaces;
+    cv::Mat frame_gray;
 
     // 1. Prepare Image by turning it into Grayscale and normalising lighting
     cv::cvtColor( frame, frame_gray, CV_BGR2GRAY );
-    equalizeHist( frame_gray, frame_gray );
+    cv::equalizeHist( frame_gray, frame_gray );
 
 	// 2. Perform Viola-Jones Object Detection 
-    cascade.detectMultiScale( frame_gray, faces, 1.1, 1, 0|CV_HAAR_SCALE_IMAGE, Size(50, 50), Size(500,500) );
-
-    pruneFaces(faces, prunedFaces, 0.75);
+    cascade.detectMultiScale( frame_gray, faces, 1.1, 1, 0|CV_HAAR_SCALE_IMAGE, cv::Size(50, 50), cv::Size(500,500) );
+    std::cout << faces.size();
+    //pruneFaces(faces, prunedFaces, 0.75);
 
        // 4. Draw box around faces found
-    for( int i = 0; i < prunedFaces.size(); i++ )
+    for( int i = 0; i < faces.size(); i++ )
 	{
-        rectangle(frame, Point(prunedFaces[i].x, prunedFaces[i].y), Point(prunedFaces[i].x + prunedFaces[i].width, prunedFaces[i].y + prunedFaces[i].height), Scalar( 0, 255, 0 ), 2);
+        cv::rectangle(frame, cv::Point(faces[i].x, faces[i].y), cv::Point(faces[i].x + faces[i].width, faces[i].y + faces[i].height), cv::Scalar( 0, 255, 0 ), 2);
     }
-    std::cout << "f1 score: " << calcf1(ground, prunedFaces, 0.5, trueNumber) << std::endl;
+    std::cout << "f1 score: " << calcf1(ground, faces, 0.5, trueNumber) << std::endl;
 }
 
-double calcf1(vector<Rect> &groundTruth, vector<Rect> &faces, double threshold, int trueNumberOfBoards)
+double calcf1(vector<cv::Rect> &groundTruth, vector<cv::Rect> &faces, double threshold, int trueNumberOfBoards)
 {
     int tp = 0;
     int othertruedetections = 0;
     truePositive(groundTruth,faces,threshold, tp, othertruedetections);
+    std::cout << "true positive score: " << tp << std::endl;
 
     if(!tp) return 0.0;
 
@@ -174,39 +180,39 @@ double calcf1(vector<Rect> &groundTruth, vector<Rect> &faces, double threshold, 
     return 2 * (precision * recall) / (precision + recall);
 }
 
-void pruneFaces(vector<Rect> &faces, vector<Rect> &prunedFaces, double threshold)
+void pruneFaces(vector<cv::Rect> &faces, vector<cv::Rect> &prunedFaces, double threshold)
 {
-    Mat tempMat;
-    Mat frame_gray;
-    cvtColor( unchanged, frame_gray, CV_BGR2GRAY ); //convert the original image to grayscale
+    cv::Mat tempMat;
+    cv::Mat frame_gray;
+    cv::cvtColor( unchanged, frame_gray, CV_BGR2GRAY ); //convert the original image to grayscale
 
-    Scalar mean, stddev;
-    meanStdDev(frame_gray, mean, stddev);  //find the mean and stddev of the image
+    cv::Scalar mean, stddev;
+    cv::meanStdDev(frame_gray, mean, stddev);  //find the mean and stddev of the image
     double frameMean = mean[0];
     double frameSTD = stddev[0];
 
-    for( Rect f : faces)
+    for( cv::Rect f : faces)
     {
-        tempMat = frame_gray(Rect(f.x, f.y, f.width, f.height) );
-        meanStdDev(tempMat, mean, stddev);
+        tempMat = frame_gray(cv::Rect(f.x, f.y, f.width, f.height) );
+        cv::meanStdDev(tempMat, mean, stddev);
 
         if(stddev[0] /frameSTD > threshold){ //IF the proportion of the stddev of the detection to the stddev of the whole image is above the threshold then it is considered a valid detection
-            rectangle(frame, Point(f.x, f.y), Point(f.x + f.width, f.y + f.height), Scalar( 0, 0, 0 ), 2);
-            prunedFaces.push_back(Rect(f.x, f.y, f.width, f.height));
+            cv::rectangle(frame, cv::Point(f.x, f.y), cv::Point(f.x + f.width, f.y + f.height), cv::Scalar( 0, 0, 0 ), 2);
+            prunedFaces.push_back(cv::Rect(f.x, f.y, f.width, f.height));
         }
     }
 }
 
-void truePositive(vector<Rect> &groundTruth, vector<Rect> &faces, double threshold, int & total, int & othertrue)
+void truePositive(vector<cv::Rect> &groundTruth, vector<cv::Rect> &faces, double threshold, int & total, int & othertrue)
 {
-    Rect intersection;
+    cv::Rect intersection;
     double ratio;
 
-    for (Rect g : groundTruth)
+    for (cv::Rect g : groundTruth)
     {
         int extra = 0;
-        rectangle(frame, Point(g.x, g.y), Point(g.x + g.width, g.y + g.height), Scalar( 255, 255, 255 ), 2);
-        for(Rect f : faces)
+        cv::rectangle(frame, cv::Point(g.x, g.y), cv::Point(g.x + g.width, g.y + g.height), Scalar( 255, 255, 255 ), 2);
+        for(cv::Rect f : faces)
         {
             intersection = g & f;
 
@@ -216,9 +222,10 @@ void truePositive(vector<Rect> &groundTruth, vector<Rect> &faces, double thresho
                 bool isCentreFine = centresThresh(g,f,threshold);
                 if(ratio >= threshold && !extra && isCentreFine)
                 {
-                    rectangle(frame, Point(f.x, f.y), Point(f.x + f.width, f.y + f.height), Scalar( 0, 0, 255 ), 2);
+                    std::cout << "We're in here so fucking tp should definitely get incremented!" << std::endl;
+                    rectangle(frame, cv::Point(f.x, f.y), cv::Point(f.x + f.width, f.y + f.height), cv::Scalar( 0, 0, 255 ), 2);
                     total++;
-                    extra++; //should this be here?!?!?!?!? maybe not?!?!?!?!
+                    extra++;
                 }
                 else if(ratio >= threshold && isCentreFine)
                 {
@@ -230,9 +237,9 @@ void truePositive(vector<Rect> &groundTruth, vector<Rect> &faces, double thresho
     }
 }
 
-bool centresThresh(Rect g, Rect f, double thresh){
-    Point gc(g.x + g.width/2, g.y + g.height/2);
-    Point fc(f.x + f.width/2, f.y + f.height/2);
+bool centresThresh(cv::Rect g, cv::Rect f, double thresh){
+    cv::Point gc(g.x + g.width/2, g.y + g.height/2);
+    cv::Point fc(f.x + f.width/2, f.y + f.height/2);
 
     double dx = (fc.x - gc.x) / g.width;
     double dy = (fc.y - gc.y) / g.height;
