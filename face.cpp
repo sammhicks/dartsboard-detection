@@ -40,7 +40,7 @@ int main( int argc, const char** argv )
     if (!cascade.load(CASCADE_NAME)) {
         printf("--(!)Error loading\n"); return EXIT_FAILURE;
     };
-/*
+
     for (int imageNum = 1; imageNum < argc; ++imageNum) {
         int imageID = imageNum - 1;
 
@@ -52,20 +52,25 @@ int main( int argc, const char** argv )
 
         detectAndDisplay(input, cascade, dartsGT[imageID], dartNumbersGT[imageID], prunedFaceDetections);
 
-        std::stringstream name;
-        name << "pruneFACEStest" << imageID << ".jpg";
+        for( unsigned int i = 0; i < prunedFaceDetections.size(); i++ )
+            {
+                cv::rectangle(input, cv::Point(prunedFaceDetections[i].x, prunedFaceDetections[i].y), cv::Point(prunedFaceDetections[i].x + prunedFaceDetections[i].width, prunedFaceDetections[i].y + prunedFaceDetections[i].height), cv::Scalar( 0, 255, 0 ), 2);
+            }
+
+       // std::stringstream name;
+        //name << "pruneFACEStest" << imageID << ".jpg";
 
         //imwrite(name.str(), input);
-    }
-*/
+    //}
+
 
     //////HOUGH SPACE TESTING LOOP...
-    for (int imageNum = 1; imageNum < argc; ++imageNum)
-    {
+    //for (int imageNum = 1; imageNum < argc; ++imageNum)
+    //{
         cv::Mat source = cv::imread(argv[imageNum], CV_LOAD_IMAGE_GRAYSCALE);
 
         std::stringstream name;
-        name << "circles10-200-0.8" << imageNum-1 << ".jpg";
+        name << "prunedFACES+HOUGH" << imageNum-1 << ".jpg";
 
         cv::Mat mag, dir;
 
@@ -120,17 +125,17 @@ int main( int argc, const char** argv )
 
         for (auto &circle: circles)
         {
-            cv::circle(circles_with_overlay, cv::Point(circle[0], circle[1]), circle[2], cvScalar(255, 0, 255));
+            cv::circle(input, cv::Point(circle[0], circle[1]), circle[2], cvScalar(255, 0, 255));
         }
 
         for (auto &circle: filtered_circles)
         {
-            cv::circle(circles_with_overlay, cv::Point(circle[0], circle[1]), circle[2], cvScalar(0, 255, 0));
+            cv::circle(input, cv::Point(circle[0], circle[1]), circle[2], cvScalar(0, 255, 0));
         }
 
         //NamedImage::showImage(NamedImage(circles_with_overlay, "Circles"));
 
-        imwrite(name.str(), circles_with_overlay);
+        imwrite(name.str(), input);
     }
 
     return 0;
