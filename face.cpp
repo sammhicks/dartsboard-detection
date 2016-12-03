@@ -35,13 +35,18 @@ CascadeClassifier cascade;
 cv::Mat frame;
 cv::Mat unchanged;
 
-//#define PRUNING_THRESHOLD 0.5
+//using namespace cv;
+//using namespace std;
+
+const double PRUNING_THRESHOLD = 0.75;
+
+const double F1_THRESHOLD = 0.5;
 
 
 /** @function main */
 int main( int argc, const char** argv )
 {
-
+    if( !cascade.load( cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
     //Mat frame;  //Frame is now global so it can be easily accessed inside of the other functions...
     std::string name;
     std::stringstream ss;
@@ -154,14 +159,14 @@ void detectAndDisplay( cv::Mat frame , vector<cv::Rect> & ground, int trueNumber
 	// 2. Perform Viola-Jones Object Detection 
     cascade.detectMultiScale( frame_gray, faces, 1.1, 1, 0|CV_HAAR_SCALE_IMAGE, cv::Size(50, 50), cv::Size(500,500) );
     std::cout << faces.size();
-    //pruneFaces(faces, prunedFaces, 0.75);
+    pruneFaces(faces, prunedFaces, PRUNING_THRESHOLD);
 
        // 4. Draw box around faces found
-    for( int i = 0; i < faces.size(); i++ )
+    for( int i = 0; i < prunedFaces.size(); i++ )
 	{
-        cv::rectangle(frame, cv::Point(faces[i].x, faces[i].y), cv::Point(faces[i].x + faces[i].width, faces[i].y + faces[i].height), cv::Scalar( 0, 255, 0 ), 2);
+        cv::rectangle(frame, cv::Point(prunedFaces[i].x, prunedFaces[i].y), cv::Point(prunedFaces[i].x + prunedFaces[i].width, prunedFaces[i].y + prunedFaces[i].height), cv::Scalar( 0, 255, 0 ), 2);
     }
-    std::cout << "f1 score: " << calcf1(ground, faces, 0.5, trueNumber) << std::endl;
+    std::cout << "f1 score: " << calcf1(ground, faces, F1_THRESHOLD, trueNumber) << std::endl;
 }
 
 double calcf1(vector<cv::Rect> &groundTruth, vector<cv::Rect> &faces, double threshold, int trueNumberOfBoards)
