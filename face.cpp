@@ -13,8 +13,8 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 
-#include "dynamic_threshold.h"
-#include "filter_list.h"
+#include "dynamicthreshold.h"
+#include "filterlist.h"
 #include "hough.h"
 #include "namedimage.h"
 #include "sobel.h"
@@ -46,32 +46,32 @@ const double F1_THRESHOLD = 0.5;
 /** @function main */
 int main( int argc, const char** argv )
 {
-    if( !cascade.load( cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
-    //Mat frame;  //Frame is now global so it can be easily accessed inside of the other functions...
-    std::string name;
-    std::stringstream ss;
+    if (!cascade.load(cascade_name)) {
+        printf("--(!)Error loading\n"); return EXIT_FAILURE;
+    };
 
+    for (int image_num = 1; image_num < argc; ++image_num) {
+        int image_id = image_num - 1;
 
-    for(int i=1;i<=16;i++){ // Use this loop to iterate through all of the training images.
-        std::vector<cv::Rect> prunedFaceDetections;
+        std::stringstream name;
 
-        ss.str("");
-        ss << i-1;
-
-        name = "pruneFACEStest"+ss.str()+".jpg";
+        name << "pruneFACEStest" << image_id << ".jpg";
 
         //cout << name;
-        frame = imread(argv[i], CV_LOAD_IMAGE_COLOR);
+        frame = imread(argv[image_num], CV_LOAD_IMAGE_COLOR);
         unchanged = frame.clone();
 
-        std::cout << "-----------dart " << i-1 << "--------------" << std::endl;
-        detectAndDisplay( frame, dartsgt[i-1], dartnumbersgt[i-1], prunedFaceDetections );
-        imwrite( name, frame );
+        std::cout << "-----------dart " << image_id << "--------------" << std::endl;
+
+        std::vector<cv::Rect> prunedFaceDetections;
+
+        detectAndDisplay( frame, dartsGT[image_id], dartNumbersGT[image_id], prunedFaceDetections );
+        imwrite(name.str(), frame);
     }
 
 
     //////HOUGH SPACE TESTING LOOP...
-   /* for (int image_num = 1; image_num < argc; ++image_num)
+   /* for
     {
         cv::Mat source = cv::imread(argv[image_num], CV_LOAD_IMAGE_GRAYSCALE);
 
@@ -163,7 +163,7 @@ void detectAndDisplay( cv::Mat frame , vector<cv::Rect> & ground, int trueNumber
     pruneFaces(faces, prunedFaces, PRUNING_THRESHOLD);
 
        // 4. Draw box around faces found
-    for( int i = 0; i < prunedFaces.size(); i++ )
+    for( unsigned int i = 0; i < prunedFaces.size(); i++ )
 	{
         cv::rectangle(frame, cv::Point(prunedFaces[i].x, prunedFaces[i].y), cv::Point(prunedFaces[i].x + prunedFaces[i].width, prunedFaces[i].y + prunedFaces[i].height), cv::Scalar( 0, 255, 0 ), 2);
     }

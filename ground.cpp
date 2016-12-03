@@ -1,6 +1,6 @@
 #include "ground.h"
 
-std::vector< vector< Rect>> dartsgt = {{Rect(443,17,162,167)},
+std::vector< vector< Rect>> dartsGT = {{Rect(443,17,162,167)},
                                        {Rect(195,126,198,200)},
                                        {Rect(102,97,90,90)},
                                        {Rect(325,149,66,72)},
@@ -17,7 +17,7 @@ std::vector< vector< Rect>> dartsgt = {{Rect(443,17,162,167)},
                                        {Rect(120,100,126,127), Rect(987,94,126,127)},
                                        {Rect(156,51,129,145)}
                                       };
-std::vector< int> dartnumbersgt = {1,
+std::vector< int> dartNumbersGT = {1,
                                    1,
                                    1,
                                    1,

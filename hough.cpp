@@ -1,64 +1,64 @@
 #include "hough.h"
 
-bool in_range(int x, int a, int b)
+bool inRange(int x, int a, int b)
 {
     return x >= a && x < b;
 }
 
-std::vector<cv::Vec3d> hough_line(cv::Mat mag, cv::Mat dir, cv::Mat &hough_space, double hough_threshold, double dir_range)
+std::vector<cv::Vec3d> houghLine(cv::Mat mag, cv::Mat dir, cv::Mat &houghSpace, double houghThreshold, double dirRange)
 {
     int
-            ymin = 0,
-            ymax = mag.size[0],
-            xmin = 0,
-            xmax = mag.size[1],
-            rho_index_min = 0,
-            rho_index_max = hough_space.size[0],
-            theta_index_min = 0,
-            theta_index_max = hough_space.size[1];
+            yMin = 0,
+            yMax = mag.size[0],
+            xMin = 0,
+            xMax = mag.size[1],
+            rhoIndexMin = 0,
+            rhoIndexMax = houghSpace.size[0],
+            thetaIndexMin = 0,
+            thetaIndexMax = houghSpace.size[1];
 
-    double diagonal_distance = cv::norm(cv::Point2f(xmax, ymax));
+    double diagonalDistance = cv::norm(cv::Point2f(xMax, yMax));
 
     double
-            rho_min = -diagonal_distance,
-            rho_max =  diagonal_distance,
-            theta_min = 0.0,
-            theta_max = 2 * M_PI;
+            rhoMin = -diagonalDistance,
+            rhoMax =  diagonalDistance,
+            thetaMin = 0.0,
+            thetaMax = 2 * M_PI;
 
-    for (int y = ymin; y < ymax; ++y)
+    for (int y = yMin; y < yMax; ++y)
     {
-        for (int x = xmin; x < xmax; ++x)
+        for (int x = xMin; x < xMax; ++x)
         {
-            uint8_t mag_val = mag.at<uint8_t>(y, x);
-            double  dir_val =  dir.at<double>(y,x);
+            uint8_t magVal = mag.at<uint8_t>(y, x);
+            double  dirVal =  dir.at<double>(y,x);
 
-            if (mag_val > 127)
+            if (magVal > 127)
             {
                 int
-                        theta_index_range_min = lerp(de_lerp(dir_val - dir_range, theta_min, theta_max), theta_index_min, theta_index_max),
-                        theta_index_range_max = lerp(de_lerp(dir_val + dir_range, theta_min, theta_max), theta_index_min, theta_index_max);
+                        thetaIndexRangeMin = lerp(deLerp(dirVal - dirRange, thetaMin, thetaMax), thetaIndexMin, thetaIndexMax),
+                        thetaIndexRangeMax = lerp(deLerp(dirVal + dirRange, thetaMin, thetaMax), thetaIndexMin, thetaIndexMax);
 
-                if (theta_index_range_min < theta_index_min)
+                if (thetaIndexRangeMin < thetaIndexMin)
                 {
-                    theta_index_range_min = theta_index_min;
+                    thetaIndexRangeMin = thetaIndexMin;
                 }
 
-                if (theta_index_range_max < theta_index_max)
+                if (thetaIndexRangeMax < thetaIndexMax)
                 {
-                    theta_index_range_max = theta_index_max;
+                    thetaIndexRangeMax = thetaIndexMax;
                 }
 
-                for (int theta_index = theta_index_range_min; theta_index < theta_index_range_max; ++theta_index)
+                for (int thetaIndex = thetaIndexRangeMin; thetaIndex < thetaIndexRangeMax; ++thetaIndex)
                 {
-                    double theta = lerp(de_lerp(theta_index, theta_index_min, theta_index_max), theta_min, theta_max);
+                    double theta = lerp(deLerp(thetaIndex, thetaIndexMin, thetaIndexMax), thetaMin, thetaMax);
 
                     double rho = x * cos(theta) + y * sin(theta);
 
-                    int rho_index = lerp(de_lerp(rho, rho_min, rho_max), rho_index_min, rho_index_max);
+                    int rho_index = lerp(deLerp(rho, rhoMin, rhoMax), rhoIndexMin, rhoIndexMax);
 
-                    if (in_range(rho_index, rho_index_min, rho_index_max))
+                    if (inRange(rho_index, rhoIndexMin, rhoIndexMax))
                     {
-                        int &hough_space_val = hough_space.at<int>(rho_index, theta_index);
+                        int &hough_space_val = houghSpace.at<int>(rho_index, thetaIndex);
 
                         ++hough_space_val;
                     }
@@ -68,37 +68,37 @@ std::vector<cv::Vec3d> hough_line(cv::Mat mag, cv::Mat dir, cv::Mat &hough_space
     }
 
     double
-            hough_min = DBL_MAX,
-            hough_max = DBL_MIN;
+            houghMin = DBL_MAX,
+            houghMax = DBL_MIN;
 
-    for (int rho_index = rho_index_min; rho_index < rho_index_max; ++rho_index)
+    for (int rhoIndex = rhoIndexMin; rhoIndex < rhoIndexMax; ++rhoIndex)
     {
-        for (int theta_index = theta_index_min; theta_index < theta_index_max; ++theta_index)
+        for (int thetaIndex = thetaIndexMin; thetaIndex < thetaIndexMax; ++thetaIndex)
         {
-            int &hough_space_val = hough_space.at<int>(rho_index, theta_index);
+            int &houghSpaceVal = houghSpace.at<int>(rhoIndex, thetaIndex);
 
-            if (hough_space_val < hough_min)
+            if (houghSpaceVal < houghMin)
             {
-                hough_min = hough_space_val;
+                houghMin = houghSpaceVal;
             }
 
-            if (hough_space_val > hough_max)
+            if (houghSpaceVal > houghMax)
             {
-                hough_max = hough_space_val;
+                houghMax = houghSpaceVal;
             }
         }
     }
 
-    cv::Mat hough_image(hough_space.size(), CV_8U);
+    cv::Mat houghImage(houghSpace.size(), CV_8U);
 
-    for (int rho_index = rho_index_min; rho_index < rho_index_max; ++rho_index)
+    for (int rhoIndex = rhoIndexMin; rhoIndex < rhoIndexMax; ++rhoIndex)
     {
-        for (int theta_index = theta_index_min; theta_index < theta_index_max; ++theta_index)
+        for (int thetaIndex = thetaIndexMin; thetaIndex < thetaIndexMax; ++thetaIndex)
         {
-            int &hough_space_val = hough_space.at<int>(rho_index, theta_index);
-            uint8_t &hough_image_val = hough_image.at<uint8_t>(rho_index, theta_index);
+            int &houghSpaceVal = houghSpace.at<int>(rhoIndex, thetaIndex);
+            uint8_t &houghImageVal = houghImage.at<uint8_t>(rhoIndex, thetaIndex);
 
-            hough_image_val = lerp(de_lerp(hough_space_val, hough_min, hough_max), 0, 255);
+            houghImageVal = lerp(deLerp(houghSpaceVal, houghMin, houghMax), 0, 255);
         }
     }
 
@@ -106,21 +106,21 @@ std::vector<cv::Vec3d> hough_line(cv::Mat mag, cv::Mat dir, cv::Mat &hough_space
 
     std::vector<cv::Vec3d> lines;
 
-    for (int rho_index = rho_index_min; rho_index < rho_index_max; ++rho_index)
+    for (int rhoIndex = rhoIndexMin; rhoIndex < rhoIndexMax; ++rhoIndex)
     {
-        for (int theta_index = theta_index_min; theta_index < theta_index_max; ++theta_index)
+        for (int thetaIndex = thetaIndexMin; thetaIndex < thetaIndexMax; ++thetaIndex)
         {
-            int &hough_space_val = hough_space.at<int>(rho_index, theta_index);
+            int &houghSpaceVal = houghSpace.at<int>(rhoIndex, thetaIndex);
 
-            double scaled_hough_space_val = de_lerp(hough_space_val, hough_min, hough_max);
+            double scaledHoughSpaceVal = deLerp(houghSpaceVal, houghMin, houghMax);
 
-            if (scaled_hough_space_val > hough_threshold)
+            if (scaledHoughSpaceVal > houghThreshold)
             {
                 double
-                        rho = lerp(de_lerp(rho_index, rho_index_min, rho_index_max), rho_min, rho_max),
-                        theta = lerp(de_lerp(theta_index, theta_index_min, theta_index_max), theta_min, theta_max);
+                        rho = lerp(deLerp(rhoIndex, rhoIndexMin, rhoIndexMax), rhoMin, rhoMax),
+                        theta = lerp(deLerp(thetaIndex, thetaIndexMin, thetaIndexMax), thetaMin, thetaMax);
 
-                cv::Vec3d line(rho, theta, hough_space_val);
+                cv::Vec3d line(rho, theta, houghSpaceVal);
 
                 lines.push_back(line);
             }
@@ -130,70 +130,70 @@ std::vector<cv::Vec3d> hough_line(cv::Mat mag, cv::Mat dir, cv::Mat &hough_space
     return lines;
 }
 
-std::vector<cv::Vec4d> hough_circle(cv::Mat mag, cv::Mat dir, cv::Mat &hough_space, double rmin, double rmax, double hough_threshold)
+std::vector<cv::Vec4d> houghCircle(cv::Mat mag, cv::Mat dir, cv::Mat &houghSpace, double rmin, double rmax, double houghThreshold)
 {
     int
-            ymin = 0,
-            ymax = mag.size[0],
-            xmin = 0,
-            xmax = mag.size[1],
-            r_index_min = 0,
-            r_index_max = hough_space.size[0],
-            b_index_min = 0,
-            b_index_max = hough_space.size[1],
-            a_index_min = 0,
-            a_index_max = hough_space.size[2];
+            yMin = 0,
+            yMax = mag.size[0],
+            xMin = 0,
+            xMax = mag.size[1],
+            rIndexMin = 0,
+            rIndexMax = houghSpace.size[0],
+            bIndexMin = 0,
+            bIndexMax = houghSpace.size[1],
+            aIndexMin = 0,
+            aIndexMax = houghSpace.size[2];
 
     double
-            bmin = ymin - rmax,
-            bmax = ymax + rmax,
-            amin = xmin - rmax,
-            amax = xmax + rmax;
+            bMin = yMin - rmax,
+            bMax = yMax + rmax,
+            aMin = xMin - rmax,
+            aMax = xMax + rmax;
 
-    for (int y = ymin; y < ymax; ++y)
+    for (int y = yMin; y < yMax; ++y)
     {
-        for (int x = xmin; x < xmax; ++x)
+        for (int x = xMin; x < xMax; ++x)
         {
-            uint8_t mag_val = mag.at<uint8_t>(y, x);
+            uint8_t magVal = mag.at<uint8_t>(y, x);
 
-            if (mag_val > 127)
+            if (magVal > 127)
             {
-                for (int r_index = r_index_min; r_index < r_index_max; ++r_index)
+                for (int rIndex = rIndexMin; rIndex < rIndexMax; ++rIndex)
                 {
-                    double r = lerp(de_lerp(r_index, r_index_min, r_index_max), rmin, rmax);
+                    double r = lerp(deLerp(rIndex, rIndexMin, rIndexMax), rmin, rmax);
 
-                    auto dir_val = dir.at<double>(y, x);
+                    auto dirVal = dir.at<double>(y, x);
 
                     double
-                            b = y + r * sin(dir_val),
-                            a = x + r * cos(dir_val);
+                            b = y + r * sin(dirVal),
+                            a = x + r * cos(dirVal);
 
                     int
-                            b_index = static_cast<int>(lerp(de_lerp(b, bmin, bmax), b_index_min, b_index_max)),
-                            a_index = static_cast<int>(lerp(de_lerp(a, amin, amax), a_index_min, a_index_max));
+                            bIndex = static_cast<int>(lerp(deLerp(b, bMin, bMax), bIndexMin, bIndexMax)),
+                            aIndex = static_cast<int>(lerp(deLerp(a, aMin, aMax), aIndexMin, aIndexMax));
 
                     if (
-                            in_range(b_index, b_index_min, b_index_max) &&
-                            in_range(a_index, a_index_min, a_index_max))
+                            inRange(bIndex, bIndexMin, bIndexMax) &&
+                            inRange(aIndex, aIndexMin, aIndexMax))
                     {
-                        int &hough_space_val = hough_space.at<int>(r_index, b_index, a_index);
+                        int &houghSpaceVal = houghSpace.at<int>(rIndex, bIndex, aIndex);
 
-                        ++hough_space_val;
+                        ++houghSpaceVal;
                     }
 
-                    b = y - r * sin(dir_val);
-                    a = x - r * cos(dir_val);
+                    b = y - r * sin(dirVal);
+                    a = x - r * cos(dirVal);
 
-                    b_index = static_cast<int>(lerp(de_lerp(b, bmin, bmax), b_index_min, b_index_max));
-                    a_index = static_cast<int>(lerp(de_lerp(a, amin, amax), a_index_min, a_index_max));
+                    bIndex = static_cast<int>(lerp(deLerp(b, bMin, bMax), bIndexMin, bIndexMax));
+                    aIndex = static_cast<int>(lerp(deLerp(a, aMin, aMax), aIndexMin, aIndexMax));
 
                     if (
-                            in_range(b_index, b_index_min, b_index_max) &&
-                            in_range(a_index, a_index_min, a_index_max))
+                            inRange(bIndex, bIndexMin, bIndexMax) &&
+                            inRange(aIndex, aIndexMin, aIndexMax))
                     {
-                        int &hough_space_val = hough_space.at<int>(r_index, b_index, a_index);
+                        int &houghSpaceVal = houghSpace.at<int>(rIndex, bIndex, aIndex);
 
-                        ++hough_space_val;
+                        ++houghSpaceVal;
                     }
                 }
             }
@@ -201,25 +201,25 @@ std::vector<cv::Vec4d> hough_circle(cv::Mat mag, cv::Mat dir, cv::Mat &hough_spa
     }
 
     double
-            hough_min = DBL_MAX,
-            hough_max = DBL_MIN;
+            houghMin = DBL_MAX,
+            houghMax = DBL_MIN;
 
-    for (int r_index = r_index_min; r_index < r_index_max; ++r_index)
+    for (int r_index = rIndexMin; r_index < rIndexMax; ++r_index)
     {
-        for (int b_index = b_index_min; b_index < b_index_max; ++b_index)
+        for (int b_index = bIndexMin; b_index < bIndexMax; ++b_index)
         {
-            for (int a_index = a_index_min; a_index < a_index_max; ++a_index)
+            for (int a_index = aIndexMin; a_index < aIndexMax; ++a_index)
             {
-                auto hough_space_val = hough_space.at<int>(r_index, b_index, a_index);
+                auto hough_space_val = houghSpace.at<int>(r_index, b_index, a_index);
 
-                if (hough_space_val < hough_min)
+                if (hough_space_val < houghMin)
                 {
-                    hough_min = hough_space_val;
+                    houghMin = hough_space_val;
                 }
 
-                if (hough_space_val > hough_max)
+                if (hough_space_val > houghMax)
                 {
-                    hough_max = hough_space_val;
+                    houghMax = hough_space_val;
                 }
             }
         }
@@ -227,24 +227,24 @@ std::vector<cv::Vec4d> hough_circle(cv::Mat mag, cv::Mat dir, cv::Mat &hough_spa
 
     std::vector<cv::Vec4d> circles;
 
-    for (int r_index = r_index_min; r_index < r_index_max; ++r_index)
+    for (int rIndex = rIndexMin; rIndex < rIndexMax; ++rIndex)
     {
-        for (int b_index = b_index_min; b_index < b_index_max; ++b_index)
+        for (int bIndex = bIndexMin; bIndex < bIndexMax; ++bIndex)
         {
-            for (int a_index = a_index_min; a_index < a_index_max; ++a_index)
+            for (int aIndex = aIndexMin; aIndex < aIndexMax; ++aIndex)
             {
-                auto hough_space_val = hough_space.at<int>(r_index, b_index, a_index);
+                auto houghSpaceVal = houghSpace.at<int>(rIndex, bIndex, aIndex);
 
-                double scaled_hough_space_val = de_lerp(hough_space_val, hough_min, hough_max);
+                double scaledHoughSpaceVal = deLerp(houghSpaceVal, houghMin, houghMax);
 
-                if (scaled_hough_space_val > hough_threshold)
+                if (scaledHoughSpaceVal > houghThreshold)
                 {
                     double
-                            r = lerp(de_lerp(r_index, r_index_min, r_index_max), rmin, rmax),
-                            b = lerp(de_lerp(b_index, b_index_min, b_index_max), bmin, bmax),
-                            a = lerp(de_lerp(a_index, a_index_min, a_index_max), amin, amax);
+                            r = lerp(deLerp(rIndex, rIndexMin, rIndexMax), rmin, rmax),
+                            b = lerp(deLerp(bIndex, bIndexMin, bIndexMax), bMin, bMax),
+                            a = lerp(deLerp(aIndex, aIndexMin, aIndexMax), aMin, aMax);
 
-                    circles.push_back(cv::Vec4d(a, b, r, hough_space_val));
+                    circles.push_back(cv::Vec4d(a, b, r, houghSpaceVal));
                 }
             }
         }

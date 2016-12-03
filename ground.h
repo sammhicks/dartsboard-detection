@@ -9,5 +9,5 @@
 
 using namespace cv;
 
-extern std::vector< vector< Rect>> dartsgt;
-extern std::vector< int> dartnumbersgt;
+extern std::vector< vector< Rect>> dartsGT;
+extern std::vector< int> dartNumbersGT;

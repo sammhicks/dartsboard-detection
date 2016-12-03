@@ -1,6 +1,6 @@
-#include "filter_list.h"
+#include "filterlist.h"
 
-std::vector<cv::Vec4d> filter_list(std::vector<cv::Vec4d> circles, double min_distance)
+std::vector<cv::Vec4d> filterList(std::vector<cv::Vec4d> circles, double min_distance)
 {
     std::vector<cv::Vec4d> filtered_circles;
 
