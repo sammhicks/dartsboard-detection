@@ -1,8 +1,8 @@
-#pragma once
+##pragma once
 
 #include "calcf1.h"
 
-const double PRUNING_THRESHOLD = 0.75;
+const double PRUNING_THRESHOLD = 0.40;
 
 std::vector<cv::Rect> detectAndDisplay(cv::Mat &input, cv::CascadeClassifier &cascade, std::vector<cv::Rect> &ground, int trueNumber);
 
