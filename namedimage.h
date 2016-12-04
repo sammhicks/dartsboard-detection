@@ -12,8 +12,13 @@ private:
     cv::Mat &image;
     std::string name;
 
+    void startShow() const;
+    void endShow() const;
+
 public:
     NamedImage(cv::Mat &image, std::string name);
 
-    void show();
+    void show() const;
+
+    static void showMany(std::vector<NamedImage> images);
 };

@@ -16,7 +16,7 @@ std::vector<cv::Vec4d> filterList(std::vector<cv::Vec4d> circles, std::vector<cv
 
         for (const cv::Rect &rect: faces)
         {
-            if (inRange(new_a, rect.x, rect.x + rect.width) && inRange(new_b, rect.y, rect.height))
+            if (inRange(new_a, rect.x, rect.x + rect.width) && inRange(new_b, rect.y, rect.y + rect.height))
             {
                 insideRectangle = true;
 
