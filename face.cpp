@@ -7,32 +7,34 @@
 #include <stdio.h>
 #include <iostream>
 
-#include "opencv2/objdetect/objdetect.hpp"
-#include "opencv2/opencv.hpp"
-#include "opencv2/core/core.hpp"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
-
 #include "detectanddisplay.h"
 #include "dynamicthreshold.h"
 #include "filterlist.h"
+#include "ground.h"
 #include "hough.h"
 #include "namedimage.h"
+#include "rectrange.h"
 #include "sobel.h"
-#include <string>
-#include "ground.h"
 
 const String CASCADE_NAME = "../dartcascade/cascade.xml";
 
-const double HOUGH_RMIN = 10;
-const double HOUGH_RMAX = 200;
-const double HOUGH_CIRCLE_THRESHOLD = 0.8;
-const double FILTER_MINDISTANCE = 1.0;
+const double MAG_THRESHOLD = 0.5;
+
+const int HOUGH_LINE_RHO_RESOLUTION = 512;
+const int HOUGH_LINE_THETA_RESOLUTION = 512;
+
 const double HOUGH_LINE_THRESHOLD = 0.8;
 const double HOUGH_LINE_DIRRANGE = 20.0 * M_PI / 180.0;
 
+const int HOUGH_CIRCLE_R_RESOLUTION = 64;
+const int HOUGH_CIRCLE_AB_RESOLUTION = 256;
 
-/** @function main */
+const double HOUGH_RMIN_RATIO = 0.75;
+const double HOUGH_RMAX_RATIO = 1.5;
+const double HOUGH_CIRCLE_THRESHOLD = 0.8;
+
+const double FILTER_MINDISTANCE = 1.0;
+
 int main( int argc, const char** argv )
 {
     CascadeClassifier cascade;
@@ -46,16 +48,21 @@ int main( int argc, const char** argv )
 
         cv::Mat input = imread(argv[imageNum], CV_LOAD_IMAGE_COLOR);
 
+        cv::Mat input_gray;
+        cv::cvtColor( input, input_gray, CV_BGR2GRAY );
+
+        cv::Mat input_with_overlay = input.clone();
+
         //std::cout << "-----------dart " << imageID << "--------------" << std::endl;
 
-        std::vector<cv::Rect> prunedFaceDetections;
+        std::vector<cv::Rect> prunedFaceDetections = detectAndDisplay(input_gray, cascade, dartsGT[imageID], dartNumbersGT[imageID]);
 
-        detectAndDisplay(input, cascade, dartsGT[imageID], dartNumbersGT[imageID], prunedFaceDetections);
+        for(const cv::Rect &face: prunedFaceDetections)
+        {
+            cv::rectangle(input_with_overlay, cv::Point(face.x, face.y), cv::Point(face.x + face.width, face.y + face.height), cv::Scalar( 0, 255, 0 ), 2);
+        }
 
-        for( unsigned int i = 0; i < prunedFaceDetections.size(); i++ )
-            {
-                cv::rectangle(input, cv::Point(prunedFaceDetections[i].x, prunedFaceDetections[i].y), cv::Point(prunedFaceDetections[i].x + prunedFaceDetections[i].width, prunedFaceDetections[i].y + prunedFaceDetections[i].height), cv::Scalar( 0, 255, 0 ), 2);
-            }
+        NamedImage(input_with_overlay, "Faces").show();
 
        // std::stringstream name;
         //name << "pruneFACEStest" << imageID << ".jpg";
@@ -63,30 +70,21 @@ int main( int argc, const char** argv )
         //imwrite(name.str(), input);
     //}
 
-
-    //////HOUGH SPACE TESTING LOOP...
-    //for (int imageNum = 1; imageNum < argc; ++imageNum)
-    //{
-        cv::Mat source = cv::imread(argv[imageNum], CV_LOAD_IMAGE_GRAYSCALE);
-
-        std::stringstream name;
-        name << "prunedFACES+HOUGH" << imageNum-1 << ".jpg";
-
         cv::Mat mag, dir;
 
-        sobel(source, mag, dir, 5);
+        sobel(input_gray, mag, dir, 5);
 
-        //NamedImage::showImage(NamedImage(mag, "Mag"));
+        NamedImage(mag, "Mag").show();
 
         cv:: Mat thresholded_mag;
 
-        dynamicThreshold(mag, thresholded_mag, 100.0, 255.0, CV_8U);
+        dynamicThreshold(mag, thresholded_mag, MAG_THRESHOLD, 255.0, CV_8U);
 
-        //NamedImage::showImage(NamedImage(thresholded_mag, "Thresholded Mag"));
+        NamedImage(thresholded_mag, "Thresholded Mag").show();
 
         // Remove lines
 
-        cv::Mat line_hough_space(512, 512, CV_32S, cv::Scalar(0));
+        cv::Mat line_hough_space(HOUGH_LINE_RHO_RESOLUTION, HOUGH_LINE_THETA_RESOLUTION, CV_32S, cv::Scalar(0));
 
         std::vector<cv::Vec3d> lines = houghLine(thresholded_mag, dir, line_hough_space, HOUGH_LINE_THRESHOLD, HOUGH_LINE_DIRRANGE);
 
@@ -109,33 +107,40 @@ int main( int argc, const char** argv )
             cv::line(thresholded_mag, ref - offset, ref + offset, cv::Scalar(0l), 7, CV_AA);
         }
 
-        //NamedImage::showImage(NamedImage(thresholded_mag, "Lines Removed"));
+        NamedImage(thresholded_mag, "Lines Removed").show();
 
-        std::vector<int> hough_space_size = {64, 256, 256};
+        std::vector<int> hough_space_size = {HOUGH_CIRCLE_R_RESOLUTION, HOUGH_CIRCLE_AB_RESOLUTION, HOUGH_CIRCLE_AB_RESOLUTION};
 
         cv::Mat hough_space(hough_space_size.size(), &(hough_space_size[0]), CV_32S, cv::Scalar(0));
 
-        auto circles = houghCircle(mag, dir, hough_space, HOUGH_RMIN, HOUGH_RMAX, HOUGH_CIRCLE_THRESHOLD);
+        cv::Vec2i minRect, maxRect;
 
-        auto filtered_circles = filterList(circles, FILTER_MINDISTANCE);
+        rectRange(prunedFaceDetections, minRect, maxRect);
 
-        cv::Mat circles_with_overlay(source.size(), CV_8UC3);
+        double rMin = HOUGH_RMIN_RATIO * (minRect[0] < minRect[1] ? minRect[0] : minRect[1]) / 2.0;
 
-        cv::cvtColor(source, circles_with_overlay, cv::COLOR_GRAY2BGR);
+        double rMax = HOUGH_RMAX_RATIO * (minRect[0] > minRect[1] ? minRect[0] : minRect[1]) / 2.0;
+
+        std::vector<cv::Vec4d> circles = houghCircle(mag, dir, hough_space, rMin, rMax, HOUGH_CIRCLE_THRESHOLD);
+
+        std::vector<cv::Vec4d> filtered_circles = filterList(circles, prunedFaceDetections, FILTER_MINDISTANCE);
 
         for (auto &circle: circles)
         {
-            cv::circle(input, cv::Point(circle[0], circle[1]), circle[2], cvScalar(255, 0, 255));
+            cv::circle(input_with_overlay, cv::Point(circle[0], circle[1]), circle[2], cvScalar(255, 0, 255));
         }
 
         for (auto &circle: filtered_circles)
         {
-            cv::circle(input, cv::Point(circle[0], circle[1]), circle[2], cvScalar(0, 255, 0));
+            cv::circle(input_with_overlay, cv::Point(circle[0], circle[1]), circle[2], cvScalar(0, 255, 0));
         }
 
-        //NamedImage::showImage(NamedImage(circles_with_overlay, "Circles"));
+        NamedImage(input_with_overlay, "Circles").show();
 
-        imwrite(name.str(), input);
+        /*std::stringstream name;
+        name << "prunedFACES+HOUGH" << imageID << ".jpg";
+
+        imwrite(name.str(), input);*/
     }
 
     return 0;

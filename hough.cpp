@@ -1,10 +1,5 @@
 #include "hough.h"
 
-bool inRange(int x, int a, int b)
-{
-    return x >= a && x < b;
-}
-
 std::vector<cv::Vec3d> houghLine(cv::Mat mag, cv::Mat dir, cv::Mat &houghSpace, double houghThreshold, double dirRange)
 {
     int

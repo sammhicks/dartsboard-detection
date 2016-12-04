@@ -6,10 +6,9 @@
 
 #include <opencv2/opencv.hpp>
 
+#include "inrange.h"
 #include "namedimage.h"
 #include "rescale.h"
-
-inline bool inRange(int x, int a, int b);
 
 std::vector<cv::Vec3d> houghLine(cv::Mat mag, cv::Mat dir, cv::Mat &houghSpace, double houghThreshold, double dirRange);
 

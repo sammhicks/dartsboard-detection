@@ -6,5 +6,5 @@ double dynamicThreshold(cv::InputArray src, cv::OutputArray dst, double thresh, 
 
     cv::minMaxLoc(src, &inputMin, &inputMax);
 
-    return cv::threshold(src, dst, maxVal * deLerp(thresh, inputMin, inputMax), maxVal, type);
+    return cv::threshold(src, dst, lerp(thresh, inputMin, inputMax), maxVal, type);
 }

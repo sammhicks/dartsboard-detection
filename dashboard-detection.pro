@@ -16,7 +16,9 @@ HEADERS += \
     dynamicthreshold.h \
     filterlist.h \
     detectanddisplay.h \
-    calcf1.h
+    calcf1.h \
+    inrange.h \
+    rectrange.h
 
 SOURCES += \
     face.cpp \
@@ -28,4 +30,5 @@ SOURCES += \
     dynamicthreshold.cpp \
     filterlist.cpp \
     detectanddisplay.cpp \
-    calcf1.cpp
+    calcf1.cpp \
+    rectrange.cpp

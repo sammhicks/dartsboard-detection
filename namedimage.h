@@ -15,6 +15,5 @@ private:
 public:
     NamedImage(cv::Mat &image, std::string name);
 
-    static void showImage(NamedImage image);
-    static void showImages(std::vector<NamedImage> &images);
+    void show();
 };

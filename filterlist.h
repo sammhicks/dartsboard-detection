@@ -4,4 +4,6 @@
 
 #include <opencv2/opencv.hpp>
 
-std::vector<cv::Vec4d> filterList(std::vector<cv::Vec4d> circles, double min_distance);
+#include "inrange.h"
+
+std::vector<cv::Vec4d> filterList(std::vector<cv::Vec4d> circles, std::vector<cv::Rect> faces, double min_distance);
