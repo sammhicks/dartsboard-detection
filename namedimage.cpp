@@ -1,8 +1,9 @@
 #include "namedimage.h"
 
-void NamedImage::startShow() const
+void NamedImage::startShow(int x, int y) const
 {
     cv::namedWindow(name);
+    cv::moveWindow(name, x, y);
     cv::imshow(name, image);
 }
 
@@ -18,7 +19,7 @@ NamedImage::NamedImage(cv::Mat &image, std::__cxx11::string name):
 
 void NamedImage::show() const
 {
-    startShow();
+    startShow(0,0);
 
     cv::waitKey();
 
@@ -27,9 +28,13 @@ void NamedImage::show() const
 
 void NamedImage::showMany(std::vector<NamedImage> images)
 {
-    for (const NamedImage &image: images)
+    int x, y;
+
+    for (int imageNum = 0; imageNum < images.size(); imageNum++)
     {
-        image.startShow();
+        y = imageNum / 3 * 500;
+        x = imageNum % 3 * 640;
+        images[imageNum].startShow(x, y);
     }
 
     cv::waitKey();

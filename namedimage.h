@@ -12,7 +12,7 @@ private:
     cv::Mat &image;
     std::string name;
 
-    void startShow() const;
+    void startShow(int x, int y) const;
     void endShow() const;
 
 public:

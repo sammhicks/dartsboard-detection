@@ -62,13 +62,73 @@ int main( int argc, const char** argv )
             cv::rectangle(input_with_overlay, face, cv::Scalar( 0, 255, 0 ), 2);
         }
 
-        //NamedImage(input_with_overlay, "Faces").show();
+    //MASK out all section that are not within a 'face' detection to black
+        cv::Mat face_mask;
+        face_mask = input.clone();
+        face_mask.setTo( cv::Scalar(0));
 
-       // std::stringstream name;
-        //name << "pruneFACEStest" << imageID << ".jpg";
+        for (Rect detection : prunedFaceDetections)
+        {
+            cv::Mat inputRect = input(detection);
+            cv::Mat maskRect = face_mask(detection);
+            inputRect.copyTo(maskRect);
+        }
+    //END OF MASK SECTION
 
-        //imwrite(name.str(), input);
-    //}
+    //THIS SECTION DOES THE LINE TRANSFORM ON THE MASKED IMAGE WITH THE OPENCV HOUGH TRANSFORM!
+        vector<Vec2f> opencvlines;
+        cvtColor(face_mask, face_mask, CV_BGR2GRAY);
+        blur( face_mask, face_mask, Size(3,3) );
+        Canny(face_mask, face_mask, 50, 200, 3);
+        HoughLines(face_mask, opencvlines, 1, CV_PI/180, 100, 0, 0 );
+        //cvtColor(face_mask,face_mask, CV_GRAY2BGR);
+        for( size_t i = 0; i < opencvlines.size(); i++ )
+        {
+          float rho0 = opencvlines[i][0], theta0 = opencvlines[i][1];
+          Point pt1, pt2;
+          double a = cos(theta0), b = sin(theta0);
+          double x0 = a*rho0, y0 = b*rho0;
+          pt1.x = cvRound(x0 + 1000*(-b));
+          pt1.y = cvRound(y0 + 1000*(a));
+          pt2.x = cvRound(x0 - 1000*(-b));
+          pt2.y = cvRound(y0 - 1000*(a));
+          line( input_with_overlay, pt1, pt2, Scalar(0,255,0), 1, CV_AA);
+        }
+    //END OF LINE SECTION
+
+    //THIS SECTION PEFORMS THE LINE TRANSFORM ON THE MASKED IMAGE USING SAM'S HOUGH LINE TRANSFORM
+        //cvtColor(face_mask,face_mask, CV_GRAY2BGR);
+
+        /*cv::Mat mag0, dir0;
+
+        sobel(face_mask, mag0, dir0, 3);
+
+        cv::Mat line_hough_space0(HOUGH_LINE_RHO_RESOLUTION, HOUGH_LINE_THETA_RESOLUTION, CV_32S, cv::Scalar(0));
+
+        std::vector<cv::Vec3d> opencvlines = houghLine(mag0, dir0, line_hough_space0, 0.8, 20.0 * M_PI / 180.0);
+
+        for (const cv::Vec3d &line: opencvlines)
+        {
+            float
+                    rho0   = line[0],
+                    theta0 = line[1];
+
+            double
+                    c0 = cos(theta0),
+                    s0 = sin(theta0);
+
+            cv::Point ref0(cvRound(c0 * rho0), cvRound(s0 * rho0));
+
+            double line_mag0 = 1000.0;
+
+            cv::Point offset0(cvRound(line_mag0 * -s0), cvRound(line_mag0 * c0));
+
+            cv::line(input_with_overlay, ref0 - offset0, ref0 + offset0, cv::Scalar(0,255,0), 1, CV_AA);
+        }*/
+    //END OF LINE TRANSFORM WITH SAM'S HOUGH TRANSFORM
+
+        //NamedImage(face_mask, "face_mask").show();
+
 
         cv::Mat mag, dir;
 
@@ -112,8 +172,9 @@ int main( int argc, const char** argv )
 
         cv::Mat masked_mag;
 
-        thresholded_mag.copyTo(masked_mag, mag_mask);
+        thresholded_mag.copyTo(masked_mag, mag_mask);\
 
+    //THIS SECTION PERFORMS SAM'S CIRCLE HOUGH TRANSFORM
         std::vector<int> hough_space_size = {HOUGH_CIRCLE_R_RESOLUTION, HOUGH_CIRCLE_AB_RESOLUTION, HOUGH_CIRCLE_AB_RESOLUTION};
 
         cv::Mat hough_space(hough_space_size.size(), &(hough_space_size[0]), CV_32S, cv::Scalar(0));
@@ -139,6 +200,30 @@ int main( int argc, const char** argv )
         {
             cv::circle(input_with_overlay, cv::Point(circle[0], circle[1]), circle[2], cvScalar(0, 255, 0), 2);
         }
+    //END OF SAM'S HOUGH
+
+    //START OF OPENCV CIRCLE HOUGH TRANSFORM
+        cv::Mat source;
+        cvtColor(input, source, CV_BGR2GRAY);
+
+        cv::GaussianBlur( source, source, Size(9, 9), 2, 2 );
+        std::vector<cv::Vec3f> opencvcircles;
+        int imagesplit = source.cols;
+
+        if(source.rows > source.cols) imagesplit = source.rows;
+        cv::HoughCircles( source, opencvcircles, CV_HOUGH_GRADIENT, 1, imagesplit*0.7, 100, 30, 20, 70 );
+        for( std::size_t i = 0; i < opencvcircles.size(); i++ )
+        {
+          cv::Point center(cvRound(opencvcircles[i][0]), cvRound(opencvcircles[i][1]));
+          int radius = cvRound(opencvcircles[i][2]);
+
+          circle( input_with_overlay, center, radius, Scalar(0,0,255), 3, 8, 0 );
+        }
+
+        std::stringstream name;
+        name << "lines+circles+pruningtest-" << imageID << ".jpg";
+    //END OF OPENCV HOUGH CIRCLE TRANSFORM
+
 
         NamedImage::showMany(std::vector<NamedImage>{
                                  NamedImage(input_with_overlay, "Circles"),
@@ -148,10 +233,7 @@ int main( int argc, const char** argv )
                                  NamedImage(mag, "Mag")
                              });
 
-        /*std::stringstream name;
-        name << "prunedFACES+HOUGH" << imageID << ".jpg";
-
-        imwrite(name.str(), input);*/
+        //imwrite(name.str(), input_with_overlay);
     }
 
     return 0;
