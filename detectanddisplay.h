@@ -1,4 +1,4 @@
-##pragma once
+#pragma once
 
 #include "calcf1.h"
 
