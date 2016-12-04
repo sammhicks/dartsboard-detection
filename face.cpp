@@ -63,20 +63,22 @@ int main( int argc, const char** argv )
         }
 
     //MASK out all section that are not within a 'face' detection to black
-        cv::Mat face_mask;
-        face_mask = input.clone();
-        face_mask.setTo( cv::Scalar(0));
+        cv::Mat face_mask_source = imread(argv[imageNum], CV_LOAD_IMAGE_GRAYSCALE);
+        //cvtColor(input, face_mask_source, CV_BGR2GRAY);
+            cv::Mat face_mask;
+            face_mask = face_mask_source.clone();
+            face_mask.setTo( cv::Scalar(0));
 
-        for (Rect detection : prunedFaceDetections)
-        {
-            cv::Mat inputRect = input(detection);
-            cv::Mat maskRect = face_mask(detection);
-            inputRect.copyTo(maskRect);
-        }
+            for (Rect detection : prunedFaceDetections)
+            {
+                cv::Mat inputRect = face_mask_source(detection);
+                cv::Mat maskRect = face_mask(detection);
+                inputRect.copyTo(maskRect);
+            }
     //END OF MASK SECTION
 
     //THIS SECTION DOES THE LINE TRANSFORM ON THE MASKED IMAGE WITH THE OPENCV HOUGH TRANSFORM!
-        vector<Vec2f> opencvlines;
+        /*vector<Vec2f> opencvlines;
         cvtColor(face_mask, face_mask, CV_BGR2GRAY);
         blur( face_mask, face_mask, Size(3,3) );
         Canny(face_mask, face_mask, 50, 200, 3);
@@ -93,7 +95,7 @@ int main( int argc, const char** argv )
           pt2.x = cvRound(x0 - 1000*(-b));
           pt2.y = cvRound(y0 - 1000*(a));
           line( input_with_overlay, pt1, pt2, Scalar(0,255,0), 1, CV_AA);
-        }
+        }*/
     //END OF LINE SECTION
 
     //THIS SECTION PEFORMS THE LINE TRANSFORM ON THE MASKED IMAGE USING SAM'S HOUGH LINE TRANSFORM
@@ -130,7 +132,7 @@ int main( int argc, const char** argv )
         //NamedImage(face_mask, "face_mask").show();
 
 
-        cv::Mat mag, dir;
+        /*cv::Mat mag, dir;
 
         sobel(input_gray, mag, dir, 5);
 
@@ -172,10 +174,10 @@ int main( int argc, const char** argv )
 
         cv::Mat masked_mag;
 
-        thresholded_mag.copyTo(masked_mag, mag_mask);\
+        thresholded_mag.copyTo(masked_mag, mag_mask);\*/
 
     //THIS SECTION PERFORMS SAM'S CIRCLE HOUGH TRANSFORM
-        std::vector<int> hough_space_size = {HOUGH_CIRCLE_R_RESOLUTION, HOUGH_CIRCLE_AB_RESOLUTION, HOUGH_CIRCLE_AB_RESOLUTION};
+        /*std::vector<int> hough_space_size = {HOUGH_CIRCLE_R_RESOLUTION, HOUGH_CIRCLE_AB_RESOLUTION, HOUGH_CIRCLE_AB_RESOLUTION};
 
         cv::Mat hough_space(hough_space_size.size(), &(hough_space_size[0]), CV_32S, cv::Scalar(0));
 
@@ -199,19 +201,17 @@ int main( int argc, const char** argv )
         for (auto &circle: filtered_circles)
         {
             cv::circle(input_with_overlay, cv::Point(circle[0], circle[1]), circle[2], cvScalar(0, 255, 0), 2);
-        }
+        }*/
     //END OF SAM'S HOUGH
 
     //START OF OPENCV CIRCLE HOUGH TRANSFORM
-        cv::Mat source;
-        cvtColor(input, source, CV_BGR2GRAY);
 
-        cv::GaussianBlur( source, source, Size(9, 9), 2, 2 );
+        cv::GaussianBlur( face_mask_source, face_mask_source, Size(9, 9), 2, 2 );
         std::vector<cv::Vec3f> opencvcircles;
-        int imagesplit = source.cols;
-
-        if(source.rows > source.cols) imagesplit = source.rows;
-        cv::HoughCircles( source, opencvcircles, CV_HOUGH_GRADIENT, 1, imagesplit*0.7, 100, 30, 20, 70 );
+        int imagesplit = face_mask_source.cols;
+        double threshy = 0.1;
+        if(face_mask_source.rows > face_mask_source.cols) imagesplit = face_mask_source.rows; threshy = 0.7;
+        cv::HoughCircles( face_mask, opencvcircles, CV_HOUGH_GRADIENT, 1, imagesplit*threshy, 100, 30, 20, 70 );
         for( std::size_t i = 0; i < opencvcircles.size(); i++ )
         {
           cv::Point center(cvRound(opencvcircles[i][0]), cvRound(opencvcircles[i][1]));
@@ -227,10 +227,10 @@ int main( int argc, const char** argv )
 
         NamedImage::showMany(std::vector<NamedImage>{
                                  NamedImage(input_with_overlay, "Circles"),
-                                 NamedImage(masked_mag, "Lines Removed"),
-                                 NamedImage(mag_mask, "Mask"),
-                                 NamedImage(thresholded_mag, "Thresholded Mag"),
-                                 NamedImage(mag, "Mag")
+                                 //NamedImage(masked_mag, "Lines Removed"),
+                                 //NamedImage(mag_mask, "Mask"),
+                                 //NamedImage(thresholded_mag, "Thresholded Mag"),
+                                 //NamedImage(mag, "Mag")
                              });
 
         //imwrite(name.str(), input_with_overlay);
