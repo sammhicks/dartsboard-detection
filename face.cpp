@@ -225,15 +225,15 @@ int main( int argc, const char** argv )
     //END OF OPENCV HOUGH CIRCLE TRANSFORM
 
 
-        NamedImage::showMany(std::vector<NamedImage>{
-                                 NamedImage(input_with_overlay, "Circles"),
+        //NamedImage::showMany(std::vector<NamedImage>{
+        //                         NamedImage(input_with_overlay, "Circles"),
                                  //NamedImage(masked_mag, "Lines Removed"),
                                  //NamedImage(mag_mask, "Mask"),
                                  //NamedImage(thresholded_mag, "Thresholded Mag"),
                                  //NamedImage(mag, "Mag")
-                             });
+                             //});
 
-        //imwrite(name.str(), input_with_overlay);
+        imwrite(name.str(), input_with_overlay);
     }
 
     return 0;
