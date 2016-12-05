@@ -1,9 +1,13 @@
 #pragma once
 
+#include <list>
 #include <map>
+#include <math.h>
 #include <vector>
 
 #include <opencv2/opencv.hpp>
+
+const float MIN_INTERSECTION_ANGLE = 5.0f * M_PI / 180.0f;
 
 class LineIntersection
 {
@@ -20,7 +24,7 @@ public:
 
     LineIntersection(cv::Vec2f a, cv::Vec2f b);
 
-    LineIntersection(const std::vector<const LineIntersection *> &intersections);
+    LineIntersection(const std::list<const LineIntersection *> &intersections);
 
     LineIntersection *getSet() const;
     unsigned int getSetSize() const;
@@ -29,7 +33,7 @@ public:
 
     static cv::Vec2f intersection(cv::Vec2f a, cv::Vec2f b);
 
-    static std::vector<LineIntersection> fromLines(const std::vector<cv::Vec2f> &lines);
+    static std::list<LineIntersection> fromLines(const std::vector<cv::Vec2f> &lines);
 
-    static std::vector<LineIntersection> fromLines(const std::vector<cv::Vec2f> &lines, float mergeDistance, unsigned int setSizeThreshold);
+    static std::list<LineIntersection> fromLines(const std::vector<cv::Vec2f> &lines, float mergeDistance, unsigned int setSizeThreshold);
 };

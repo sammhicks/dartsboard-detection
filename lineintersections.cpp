@@ -14,7 +14,7 @@ LineIntersection::LineIntersection(cv::Vec2f a, cv::Vec2f b):
 {
 }
 
-LineIntersection::LineIntersection(const std::vector<const LineIntersection*> &intersections):
+LineIntersection::LineIntersection(const std::list<const LineIntersection *> &intersections):
     set(NULL),
     setSize(1)
 {
@@ -75,44 +75,49 @@ cv::Vec2f LineIntersection::intersection(cv::Vec2f a, cv::Vec2f b)
             rhoB = b[0],
             thetaB = b[1];
 
-    float
+    double
             sA = sin(thetaA),
             cA = cos(thetaA),
             sB = sin(thetaB),
             cB = cos(thetaB),
             csc = 1.0 / sin(thetaA - thetaB);
 
-    cv::Mat result = csc * (cv::Mat_<float>(2, 2) << -sB, sA, cB, -cA) * (cv::Mat_<float>(2, 1) << rhoA, rhoB);
+    cv::Mat result = csc * (cv::Mat_<double>(2, 2) << -sB, sA, cB, -cA) * (cv::Mat_<double>(2, 1) << rhoA, rhoB);
 
-    float
-            x = result.at<float>(0, 0),
-            y = result.at<float>(1, 0);
+    double
+            x = result.at<double>(0, 0),
+            y = result.at<double>(1, 0);
 
     return cv::Vec2f(x, y);
 }
 
-std::vector<LineIntersection> LineIntersection::fromLines(const std::vector<cv::Vec2f> &lines)
+std::list<LineIntersection> LineIntersection::fromLines(const std::vector<cv::Vec2f> &lines)
 {
-    std::vector<LineIntersection> intersections;
+    std::list<LineIntersection> intersections;
 
     for (auto firstLineIt = lines.begin(); firstLineIt != lines.end(); ++firstLineIt)
     {
         for (auto secondLineIt = (firstLineIt + 1); secondLineIt != lines.end(); ++secondLineIt)
         {
-            intersections.emplace_back(*firstLineIt, *secondLineIt);
+            if (std::abs((*firstLineIt)[1] - (*secondLineIt)[1]) > MIN_INTERSECTION_ANGLE)
+            {
+                intersections.emplace_back(*firstLineIt, *secondLineIt);
+            }
         }
     }
 
     return intersections;
 }
 
-std::vector<LineIntersection> LineIntersection::fromLines(const std::vector<cv::Vec2f> &lines, float mergeDistance, unsigned int setSizeThreshold)
+std::list<LineIntersection> LineIntersection::fromLines(const std::vector<cv::Vec2f> &lines, float mergeDistance, unsigned int setSizeThreshold)
 {
-    std::vector<LineIntersection> intersections = fromLines(lines);
+    std::list<LineIntersection> intersections = fromLines(lines);
 
     for (auto firstIntersectionIt = intersections.begin(); firstIntersectionIt != intersections.end(); ++firstIntersectionIt)
     {
-        for (auto secondIntersectionIt = (firstIntersectionIt + 1); secondIntersectionIt != intersections.end(); ++secondIntersectionIt)
+        auto secondIntersectionIt = firstIntersectionIt;
+        secondIntersectionIt++;
+        for (; secondIntersectionIt != intersections.end(); ++secondIntersectionIt)
         {
             if (cv::norm(firstIntersectionIt->position - secondIntersectionIt->position) < mergeDistance)
             {
@@ -121,7 +126,7 @@ std::vector<LineIntersection> LineIntersection::fromLines(const std::vector<cv::
         }
     }
 
-    std::map<LineIntersection*, std::vector<const LineIntersection*>> sets;
+    std::map<LineIntersection*, std::list<const LineIntersection*>> sets;
 
     for (const LineIntersection &intersection: intersections)
     {
@@ -137,7 +142,7 @@ std::vector<LineIntersection> LineIntersection::fromLines(const std::vector<cv::
         }
     }
 
-    std::vector<LineIntersection> filteredIntersections;
+    std::list<LineIntersection> filteredIntersections;
 
     for (const auto& kv : sets)
     {
@@ -149,3 +154,4 @@ std::vector<LineIntersection> LineIntersection::fromLines(const std::vector<cv::
 
     return filteredIntersections;
 }
+
