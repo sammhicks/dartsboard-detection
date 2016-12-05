@@ -19,7 +19,8 @@ HEADERS += \
     calcf1.h \
     inrange.h \
     rectrange.h \
-    lineintersections.h
+    lineintersections.h \
+    samplevector.h
 
 SOURCES += \
     face.cpp \

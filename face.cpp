@@ -15,6 +15,7 @@
 #include "lineintersections.h"
 #include "namedimage.h"
 #include "rectrange.h"
+#include "samplevector.h"
 #include "sobel.h"
 
 const String CASCADE_NAME = "../dartcascade/cascade.xml";
@@ -252,11 +253,13 @@ int main( int argc, const char** argv )
                 vector<Vec2f> opencvlines;
                 blur( faceRect, faceRect, Size(3,3) );
                 Canny(faceRect, faceRect, 50, 150, 3);
-                HoughLines(faceRect, opencvlines, 1, CV_PI/512, 40, 0, 0 );
+                HoughLines(faceRect, opencvlines, 1, CV_PI/512, 100, 0, 0 );
                 cvtColor(faceRect,faceRect, CV_GRAY2BGR);
-                for( size_t i = 0; i < opencvlines.size(); i++ )
+
+                vector<Vec2f> sampledOpenCVLines = sample(opencvlines, 150);
+                for( size_t i = 0; i < sampledOpenCVLines.size(); i++ )
                 {
-                  float rho0 = opencvlines[i][0], theta0 = opencvlines[i][1];
+                  float rho0 = sampledOpenCVLines[i][0], theta0 = sampledOpenCVLines[i][1];
                   Point pt1, pt2;
                   double a = cos(theta0), b = sin(theta0);
                   double x0 = a*rho0, y0 = b*rho0;
@@ -267,18 +270,19 @@ int main( int argc, const char** argv )
                   line( softCopy, pt1, pt2, Scalar(0,255,0), 1, CV_AA);
                 }
                 //Now we need to find the intersections of those lines... First loop through and make a fookin vector of intersections mate...
-                /*std::vector<LineIntersection> intersections;
+                std::list<LineIntersection> intersections;
                 //for( size_t i = 0; i < opencvlines.size(); i++ )
                 //{
                   //float rho0 = opencvlines[i][0], theta0 = opencvlines[i][1];
-                  intersections = LineIntersection::fromLines(opencvlines, 5.0,6);
-                  for(LineIntersection intersection : intersections)
+                  intersections = LineIntersection::fromLines(sampledOpenCVLines, 2.0, 1);
+                //}
+
+                  for (const LineIntersection &intersection: intersections)
                   {
-                      intersection.position[0] += detection.x; intersection.position[1] += detection.y;
-                      cv::circle( input_with_overlay, cv::Point(intersection.position[0],intersection.position[1]), 2, Scalar(0,0,255), 3, 8, 0 );
-                      std::cout << intersection.position << std::endl;
+                      cv::circle(input_with_overlay, cv::Point(intersection.position[0], intersection.position[1]), 4, cv::Scalar(255, 0, 0), -1);
                   }
-                std::cout << "The intersections list has " << intersections.size() << "members..." << std::endl; */
+
+                std::cout << "The intersections list has " << intersections.size() << "members..." << std::endl;
 
                 std::cout << "The number of lines is!: " << opencvlines.size() << std::endl;
 
