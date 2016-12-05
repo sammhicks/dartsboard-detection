@@ -75,18 +75,18 @@ cv::Vec2f LineIntersection::intersection(cv::Vec2f a, cv::Vec2f b)
             rhoB = b[0],
             thetaB = b[1];
 
-    double
+    float
             sA = sin(thetaA),
             cA = cos(thetaA),
             sB = sin(thetaB),
             cB = cos(thetaB),
             csc = 1.0 / sin(thetaA - thetaB);
 
-    cv::Mat result = csc * (cv::Mat_<double>(2, 2) << -sB, sA, cB, -cA) * (cv::Mat_<double>(2, 1) << rhoA, rhoB);
+    cv::Mat result = csc * (cv::Mat_<float>(2, 2) << -sB, sA, cB, -cA) * (cv::Mat_<float>(2, 1) << rhoA, rhoB);
 
-    double
-            x = result.at<double>(0, 0),
-            y = result.at<double>(1, 0);
+    float
+            x = result.at<float>(0, 0),
+            y = result.at<float>(1, 0);
 
     return cv::Vec2f(x, y);
 }
@@ -106,7 +106,7 @@ std::vector<LineIntersection> LineIntersection::fromLines(const std::vector<cv::
     return intersections;
 }
 
-std::vector<LineIntersection> LineIntersection::fromLines(const std::vector<cv::Vec2f> &lines, double mergeDistance, unsigned int setSizeThreshold)
+std::vector<LineIntersection> LineIntersection::fromLines(const std::vector<cv::Vec2f> &lines, float mergeDistance, unsigned int setSizeThreshold)
 {
     std::vector<LineIntersection> intersections = fromLines(lines);
 

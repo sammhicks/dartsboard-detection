@@ -31,5 +31,5 @@ public:
 
     static std::vector<LineIntersection> fromLines(const std::vector<cv::Vec2f> &lines);
 
-    static std::vector<LineIntersection> fromLines(const std::vector<cv::Vec2f> &lines, double mergeDistance, unsigned int setSizeThreshold);
+    static std::vector<LineIntersection> fromLines(const std::vector<cv::Vec2f> &lines, float mergeDistance, unsigned int setSizeThreshold);
 };
