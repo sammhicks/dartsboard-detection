@@ -12,6 +12,7 @@
 #include "filterlist.h"
 #include "ground.h"
 #include "hough.h"
+#include "lineintersections.h"
 #include "namedimage.h"
 #include "rectrange.h"
 #include "sobel.h"
