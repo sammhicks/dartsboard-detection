@@ -35,6 +35,11 @@ const double HOUGH_CIRCLE_THRESHOLD = 0.8;
 
 const double FILTER_MINDISTANCE = 1.0;
 
+bool containedInRect(cv::Rect rect, int x, int y);
+bool isAroundCircle(cv::Rect rect, std::vector<cv::Vec3f> & opencvcircles);
+double euclideanDist(Point p, Point q);
+int closestRect(int x, int y, std::vector<cv::Rect> & detections );
+
 int main( int argc, const char** argv )
 {
     CascadeClassifier cascade;
@@ -77,12 +82,13 @@ int main( int argc, const char** argv )
             }
     //END OF MASK SECTION
 
+
     //THIS SECTION DOES THE LINE TRANSFORM ON THE MASKED IMAGE WITH THE OPENCV HOUGH TRANSFORM!
         /*vector<Vec2f> opencvlines;
         cvtColor(face_mask, face_mask, CV_BGR2GRAY);
-        blur( face_mask, face_mask, Size(3,3) );
-        Canny(face_mask, face_mask, 50, 200, 3);
-        HoughLines(face_mask, opencvlines, 1, CV_PI/180, 100, 0, 0 );
+        blur( faceRect, faceRect, Size(3,3) );
+        Canny(faceRect, faceRect, 50, 200, 3);
+        HoughLines(faceRect, opencvlines, 1, CV_PI/180, 100, 0, 0 );
         //cvtColor(face_mask,face_mask, CV_GRAY2BGR);
         for( size_t i = 0; i < opencvlines.size(); i++ )
         {
@@ -94,7 +100,7 @@ int main( int argc, const char** argv )
           pt1.y = cvRound(y0 + 1000*(a));
           pt2.x = cvRound(x0 - 1000*(-b));
           pt2.y = cvRound(y0 - 1000*(a));
-          line( input_with_overlay, pt1, pt2, Scalar(0,255,0), 1, CV_AA);
+          line( faceRect, pt1, pt2, Scalar(0,255,0), 1, CV_AA);
         }*/
     //END OF LINE SECTION
 
@@ -206,12 +212,12 @@ int main( int argc, const char** argv )
 
     //START OF OPENCV CIRCLE HOUGH TRANSFORM
 
-        cv::GaussianBlur( face_mask_source, face_mask_source, Size(9, 9), 2, 2 );
+        //cv::GaussianBlur( face_mask_source, face_mask_source, Size(9, 9), 2, 2 );
         std::vector<cv::Vec3f> opencvcircles;
         int imagesplit = face_mask_source.cols;
         double threshy = 0.1;
         if(face_mask_source.rows > face_mask_source.cols) imagesplit = face_mask_source.rows; threshy = 0.7;
-        cv::HoughCircles( face_mask, opencvcircles, CV_HOUGH_GRADIENT, 1, imagesplit*threshy, 100, 30, 20, 70 );
+        cv::HoughCircles( face_mask_source, opencvcircles, CV_HOUGH_GRADIENT, 1, imagesplit*threshy, 100, 30, 20, 70 );
         for( std::size_t i = 0; i < opencvcircles.size(); i++ )
         {
           cv::Point center(cvRound(opencvcircles[i][0]), cvRound(opencvcircles[i][1]));
@@ -219,22 +225,112 @@ int main( int argc, const char** argv )
 
           circle( input_with_overlay, center, radius, Scalar(0,0,255), 3, 8, 0 );
         }
+    //END OF OPENCV HOUGH CIRCLE TRANSFORM
+
+    //THIS SECTION CHECKS TO SEE IF A FACE HAS A CIRCLE CENTER IN IT, AND IF IT DOES, IT RUNS THE LINE DETECTOR ON IT AND DRAWS THE LINES MATE...
+        //cv::Mat face_mask_source = imread(argv[imageNum], CV_LOAD_IMAGE_GRAYSCALE);
+        //int i=0;
+        //for (Rect detection : prunedFaceDetections)
+        for( std::size_t i = 0; i < opencvcircles.size(); i++ )
+        {
+            cv::Rect detection = prunedFaceDetections[closestRect( opencvcircles[i][0], opencvcircles[i][1], prunedFaceDetections)];
+            std::cout << "closest face detection index = " << prunedFaceDetections[ closestRect( opencvcircles[i][0], opencvcircles[i][1], prunedFaceDetections) ] << std::endl ;
+            cv::rectangle(input_with_overlay, detection, cv::Scalar( 255, 255, 255 ), 2);
+            //if(isAroundCircle(detection, opencvcircles))
+            //{
+
+                ///////////////////////////////////////////
+                cv::Mat faceRect = face_mask_source(detection).clone();
+                cv::Mat softCopy = input_with_overlay(detection);
+
+                cv::Scalar rectMean, rectStddev;
+                cv::meanStdDev(faceRect, rectMean, rectStddev);  //find the mean and stddev of the image
+                double rectSTD = rectStddev[0];
+                std::cout << "standard deviation of the 'face' that has a circle in it... " << rectSTD << std::endl;
+
+                //cv::Mat maskRect = face_mask(detection);
+                //inputRect.copyTo(maskRect);
+                vector<Vec2f> opencvlines;
+                blur( faceRect, faceRect, Size(3,3) );
+                Canny(faceRect, faceRect, 50, 200, 3);
+                HoughLines(faceRect, opencvlines, 1, CV_PI/512, 40, 0, 0 );
+                cvtColor(faceRect,faceRect, CV_GRAY2BGR);
+                for( size_t i = 0; i < opencvlines.size(); i++ )
+                {
+                  float rho0 = opencvlines[i][0], theta0 = opencvlines[i][1];
+                  Point pt1, pt2;
+                  double a = cos(theta0), b = sin(theta0);
+                  double x0 = a*rho0, y0 = b*rho0;
+                  pt1.x = cvRound(x0 + 1000*(-b));
+                  pt1.y = cvRound(y0 + 1000*(a));
+                  pt2.x = cvRound(x0 - 1000*(-b));
+                  pt2.y = cvRound(y0 - 1000*(a));
+                  line( softCopy, pt1, pt2, Scalar(0,255,0), 1, CV_AA);
+                }
+                std::cout << "The number of lines is!: " << opencvlines.size() << std::endl;
+                /*std::stringstream name;
+                name << "face lines" << i;
+                NamedImage(faceRect, name.str()).show();
+                i++; */
+            //}
+
+
+        }
+    //END OF SECTION THAT DRAWS LINES IN FACES THAT HAVE A CIRCLE IN THEM...
 
         std::stringstream name;
         name << "lines+circles+pruningtest-" << imageID << ".jpg";
-    //END OF OPENCV HOUGH CIRCLE TRANSFORM
 
 
-        //NamedImage::showMany(std::vector<NamedImage>{
-        //                         NamedImage(input_with_overlay, "Circles"),
+
+        NamedImage::showMany(std::vector<NamedImage>{
+                                NamedImage(input_with_overlay, "Circles"),
                                  //NamedImage(masked_mag, "Lines Removed"),
                                  //NamedImage(mag_mask, "Mask"),
                                  //NamedImage(thresholded_mag, "Thresholded Mag"),
                                  //NamedImage(mag, "Mag")
-                             //});
+                             });
 
-        imwrite(name.str(), input_with_overlay);
+        //imwrite(name.str(), input_with_overlay);
     }
 
     return 0;
 }
+
+bool containedInRect(cv::Rect rect, int x, int y)
+{
+    if( x > rect.x && x < rect.x + rect.width && y > rect.y && y < rect.y + rect.height) return true;
+    else return false;
+}
+
+bool isAroundCircle(cv::Rect rect, std::vector<cv::Vec3f> & opencvcircles)
+{
+    for( std::size_t i = 0; i < opencvcircles.size(); i++ )
+    {
+        if(containedInRect(rect, opencvcircles[i][0], opencvcircles[i][1] )) return true;
+    }
+    return false;
+}
+
+int closestRect(int x, int y, std::vector<cv::Rect> & detections )
+{
+    cv::Point centre(x,y);
+    double distance = std::numeric_limits<double>::max();
+    int index;
+    for(unsigned int detection = 0; detection < detections.size() ; detection++ )
+    {
+        double dist = euclideanDist( centre , Point(detections[detection].x + detections[detection].width/2, detections[detection].y + detections[detection].height/2));
+        if( dist < distance )
+        {
+            distance = dist;
+            index = detection;
+        }
+    }
+    return index;
+}
+
+double euclideanDist(Point p, Point q) {
+    Point diff = p - q;
+    return cv::sqrt(diff.x*diff.x + diff.y*diff.y);
+}
+
