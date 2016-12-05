@@ -12,13 +12,13 @@ private:
     unsigned int setSize;
 
 public:
-    cv::Vec2d position;
+    cv::Vec2f position;
 
     unsigned int count;
 
-    LineIntersection(cv::Vec2d position);
+    LineIntersection(cv::Vec2f position);
 
-    LineIntersection(cv::Vec2d a, cv::Vec2d b);
+    LineIntersection(cv::Vec2f a, cv::Vec2f b);
 
     LineIntersection(const std::vector<const LineIntersection *> &intersections);
 
@@ -27,9 +27,9 @@ public:
 
     void merge(LineIntersection &other);
 
-    static cv::Vec2d intersection(cv::Vec2d a, cv::Vec2d b);
+    static cv::Vec2f intersection(cv::Vec2f a, cv::Vec2f b);
 
-    static std::vector<LineIntersection> fromLines(const std::vector<cv::Vec2d> &lines);
+    static std::vector<LineIntersection> fromLines(const std::vector<cv::Vec2f> &lines);
 
-    static std::vector<LineIntersection> fromLines(const std::vector<cv::Vec2d> &lines, double mergeDistance, unsigned int setSizeThreshold);
+    static std::vector<LineIntersection> fromLines(const std::vector<cv::Vec2f> &lines, double mergeDistance, unsigned int setSizeThreshold);
 };

@@ -218,7 +218,7 @@ int main( int argc, const char** argv )
         int imagesplit = face_mask_source.cols;
         double threshy = 0.1;
         if(face_mask_source.rows > face_mask_source.cols) imagesplit = face_mask_source.rows; threshy = 0.7;
-        cv::HoughCircles( face_mask_source, opencvcircles, CV_HOUGH_GRADIENT, 1, imagesplit*threshy, 100, 30, 20, 70 );
+        cv::HoughCircles( face_mask, opencvcircles, CV_HOUGH_GRADIENT, 1, imagesplit*threshy, 100, 30, 20, 70 );
         for( std::size_t i = 0; i < opencvcircles.size(); i++ )
         {
           cv::Point center(cvRound(opencvcircles[i][0]), cvRound(opencvcircles[i][1]));
@@ -237,8 +237,6 @@ int main( int argc, const char** argv )
             cv::Rect detection = prunedFaceDetections[closestRect( opencvcircles[i][0], opencvcircles[i][1], prunedFaceDetections)];
             std::cout << "closest face detection index = " << prunedFaceDetections[ closestRect( opencvcircles[i][0], opencvcircles[i][1], prunedFaceDetections) ] << std::endl ;
             cv::rectangle(input_with_overlay, detection, cv::Scalar( 255, 255, 255 ), 2);
-            //if(isAroundCircle(detection, opencvcircles))
-            //{
 
                 ///////////////////////////////////////////
                 cv::Mat faceRect = face_mask_source(detection).clone();
@@ -253,8 +251,8 @@ int main( int argc, const char** argv )
                 //inputRect.copyTo(maskRect);
                 vector<Vec2f> opencvlines;
                 blur( faceRect, faceRect, Size(3,3) );
-                Canny(faceRect, faceRect, 50, 200, 3);
-                HoughLines(faceRect, opencvlines, 1, CV_PI/512, 40, 0, 0 );
+                Canny(faceRect, faceRect, 50, 150, 3);
+                HoughLines(faceRect, opencvlines, 1, CV_PI/512, 100, 0, 0 );
                 cvtColor(faceRect,faceRect, CV_GRAY2BGR);
                 for( size_t i = 0; i < opencvlines.size(); i++ )
                 {
@@ -268,12 +266,16 @@ int main( int argc, const char** argv )
                   pt2.y = cvRound(y0 - 1000*(a));
                   line( softCopy, pt1, pt2, Scalar(0,255,0), 1, CV_AA);
                 }
+                //Now we need to find the intersections of those lines... First loop through and make a fookin vector of intersections mate...
+                std::vector<LineIntersection> intersections;
+                for( size_t i = 0; i < opencvlines.size(); i++ )
+                {
+                  //float rho0 = opencvlines[i][0], theta0 = opencvlines[i][1];
+                  intersections = LineIntersection::fromLines(opencvlines, 2.0,10);
+                }
+                std::cout << "The intersections list has " << intersections.size() << "members..." << std::endl;
+
                 std::cout << "The number of lines is!: " << opencvlines.size() << std::endl;
-                /*std::stringstream name;
-                name << "face lines" << i;
-                NamedImage(faceRect, name.str()).show();
-                i++; */
-            //}
 
 
         }

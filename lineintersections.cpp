@@ -1,7 +1,7 @@
 #include "lineintersections.h"
 
 
-LineIntersection::LineIntersection(cv::Vec2d position):
+LineIntersection::LineIntersection(cv::Vec2f position):
     set(NULL),
     setSize(1),
     position(position),
@@ -9,7 +9,7 @@ LineIntersection::LineIntersection(cv::Vec2d position):
 {
 }
 
-LineIntersection::LineIntersection(cv::Vec2d a, cv::Vec2d b):
+LineIntersection::LineIntersection(cv::Vec2f a, cv::Vec2f b):
     LineIntersection(intersection(a, b))
 {
 }
@@ -18,7 +18,7 @@ LineIntersection::LineIntersection(const std::vector<const LineIntersection*> &i
     set(NULL),
     setSize(1)
 {
-    position = cv::Vec2d(0.0, 0.0);
+    position = cv::Vec2f(0.0, 0.0);
 
     for (const LineIntersection *intersection: intersections)
     {
@@ -67,7 +67,7 @@ void LineIntersection::merge(LineIntersection &other)
     }
 }
 
-cv::Vec2d LineIntersection::intersection(cv::Vec2d a, cv::Vec2d b)
+cv::Vec2f LineIntersection::intersection(cv::Vec2f a, cv::Vec2f b)
 {
     float
             rhoA = a[0],
@@ -88,10 +88,10 @@ cv::Vec2d LineIntersection::intersection(cv::Vec2d a, cv::Vec2d b)
             x = result.at<double>(0, 0),
             y = result.at<double>(1, 0);
 
-    return cv::Vec2d(x, y);
+    return cv::Vec2f(x, y);
 }
 
-std::vector<LineIntersection> LineIntersection::fromLines(const std::vector<cv::Vec2d> &lines)
+std::vector<LineIntersection> LineIntersection::fromLines(const std::vector<cv::Vec2f> &lines)
 {
     std::vector<LineIntersection> intersections;
 
@@ -106,7 +106,7 @@ std::vector<LineIntersection> LineIntersection::fromLines(const std::vector<cv::
     return intersections;
 }
 
-std::vector<LineIntersection> LineIntersection::fromLines(const std::vector<cv::Vec2d> &lines, double mergeDistance, unsigned int setSizeThreshold)
+std::vector<LineIntersection> LineIntersection::fromLines(const std::vector<cv::Vec2f> &lines, double mergeDistance, unsigned int setSizeThreshold)
 {
     std::vector<LineIntersection> intersections = fromLines(lines);
 
