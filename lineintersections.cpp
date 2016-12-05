@@ -99,7 +99,7 @@ std::vector<LineIntersection> LineIntersection::fromLines(const std::vector<cv::
     {
         for (auto secondLineIt = (firstLineIt + 1); secondLineIt != lines.end(); ++secondLineIt)
         {
-            intersections.push_back(LineIntersection(*firstLineIt, *secondLineIt));
+            intersections.emplace_back(*firstLineIt, *secondLineIt);
         }
     }
 
@@ -143,7 +143,7 @@ std::vector<LineIntersection> LineIntersection::fromLines(const std::vector<cv::
     {
         if (kv.second.size() >= setSizeThreshold)
         {
-            filteredIntersections.push_back(LineIntersection(kv.second));
+            filteredIntersections.emplace_back(kv.second);
         }
     }
 

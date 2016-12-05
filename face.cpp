@@ -38,21 +38,6 @@ const double FILTER_MINDISTANCE = 1.0;
 
 int main( int argc, const char** argv )
 {
-    std::vector<cv::Vec2d> lines= {
-        cv::Vec2d(2.0,   0.0 * M_PI / 180.0),
-        cv::Vec2d(2.0,  90.0 * M_PI / 180.0),
-        cv::Vec2d(0.0, atan2(1.0, 1.0))
-    };
-
-    std::vector<LineIntersection> intersections = LineIntersection::fromLines(lines);
-
-    for (const LineIntersection &intersection: intersections)
-    {
-        std::cout << intersection.position << std::endl;
-    }
-
-    exit(EXIT_SUCCESS);
-
     CascadeClassifier cascade;
 
     if (!cascade.load(CASCADE_NAME)) {
