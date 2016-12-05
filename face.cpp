@@ -268,11 +268,11 @@ int main( int argc, const char** argv )
                 }
                 //Now we need to find the intersections of those lines... First loop through and make a fookin vector of intersections mate...
                 std::vector<LineIntersection> intersections;
-                for( size_t i = 0; i < opencvlines.size(); i++ )
-                {
+                //for( size_t i = 0; i < opencvlines.size(); i++ )
+                //{
                   //float rho0 = opencvlines[i][0], theta0 = opencvlines[i][1];
-                  intersections = LineIntersection::fromLines(opencvlines, 2.0,10);
-                }
+                  intersections = LineIntersection::fromLines(opencvlines, 2.0,1);
+                //}
                 std::cout << "The intersections list has " << intersections.size() << "members..." << std::endl;
 
                 std::cout << "The number of lines is!: " << opencvlines.size() << std::endl;
