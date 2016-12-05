@@ -37,7 +37,7 @@ const double HOUGH_CIRCLE_THRESHOLD = 0.8;
 
 const double FILTER_MINDISTANCE = 1.0;
 
-bool containedInRect(cv::Rect rect, int x, int y);
+bool containedInRect(cv::Rect rect, int x, int y, int rad);
 bool isAroundCircle(cv::Rect rect, std::vector<cv::Vec3f> & opencvcircles);
 double euclideanDist(Point p, Point q);
 int closestRect(int x, int y, std::vector<cv::Rect> & detections );
@@ -238,9 +238,24 @@ int main( int argc, const char** argv )
         //int i=0;
         //for (Rect detection : prunedFaceDetections)
         std::vector<cv::Rect> finalOut;
+        int finalHeight = 0, finalWidth = 0, accu = 0;
         for( std::size_t i = 0; i < opencvcircles.size(); i++ )
         {
+            for(cv::Rect& detections : prunedFaceDetections)
+            {
+                if(containedInRect(detections,opencvcircles[i][0], opencvcircles[i][1], opencvcircles[i][2]))
+                {
+                    finalHeight += detections.height;
+                    finalWidth += detections.width;
+                    accu++;
+                }
+            }
+            finalHeight /= accu;
+            finalWidth /= accu;
             cv::Rect detection = prunedFaceDetections[closestRect( opencvcircles[i][0], opencvcircles[i][1], prunedFaceDetections)];
+            //std::cout << "h: " << finalHeight << " w: " << finalWidth << std::endl;
+            //detection.height = finalHeight;
+            //detection.width = finalWidth;
             //std::cout << "closest face detection index = " << prunedFaceDetections[ closestRect( opencvcircles[i][0], opencvcircles[i][1], prunedFaceDetections) ] << std::endl ;
             //cv::rectangle(input_with_overlay, detection, cv::Scalar( 255, 255, 255 ), 2);
 
@@ -297,6 +312,8 @@ int main( int argc, const char** argv )
 
                   biggest.position[0] += detection.x; biggest.position[1] += detection.y;
                   //cv::circle(input_with_overlay, cv::Point(biggest.position[0], biggest.position[1]), 4, cv::Scalar(255, 0, 0), -1);
+                  if(finalHeight > detection.height) detection.height = finalHeight;
+                  if(finalWidth > detection.width) detection.width = finalWidth;
                   detection.x = biggest.position[0]-detection.width/2;
                   detection.y = biggest.position[1]-detection.height/2;
                   cv::rectangle(input_with_overlay, detection, cv::Scalar( 0, 255, 255 ), 2);
@@ -330,17 +347,17 @@ int main( int argc, const char** argv )
     return 0;
 }
 
-bool containedInRect(cv::Rect rect, int x, int y)
+bool containedInRect(cv::Rect rect, int x, int y, int rad)
 {
-    if( x > rect.x && x < rect.x + rect.width && y > rect.y && y < rect.y + rect.height) return true;
-    else return false;
+    if( x > rect.x-rad && x < rect.x + rect.width+rad && y > rect.y-rad && y < rect.y + rect.height+rad) return true;
+    return false;
 }
 
 bool isAroundCircle(cv::Rect rect, std::vector<cv::Vec3f> & opencvcircles)
 {
     for( std::size_t i = 0; i < opencvcircles.size(); i++ )
     {
-        if(containedInRect(rect, opencvcircles[i][0], opencvcircles[i][1] )) return true;
+        if(containedInRect(rect, opencvcircles[i][0], opencvcircles[i][1], opencvcircles[1][2] )) return true;
     }
     return false;
 }
