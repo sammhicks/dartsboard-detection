@@ -18,7 +18,8 @@ HEADERS += \
     detectanddisplay.h \
     calcf1.h \
     inrange.h \
-    rectrange.h
+    rectrange.h \
+    lineintersections.h
 
 SOURCES += \
     face.cpp \
@@ -31,4 +32,5 @@ SOURCES += \
     filterlist.cpp \
     detectanddisplay.cpp \
     calcf1.cpp \
-    rectrange.cpp
+    rectrange.cpp \
+    lineintersections.cpp
