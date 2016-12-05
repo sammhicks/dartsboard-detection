@@ -253,7 +253,7 @@ int main( int argc, const char** argv )
                 vector<Vec2f> opencvlines;
                 blur( faceRect, faceRect, Size(3,3) );
                 Canny(faceRect, faceRect, 50, 150, 3);
-                HoughLines(faceRect, opencvlines, 1, CV_PI/512, 100, 0, 0 );
+                HoughLines(faceRect, opencvlines, 1, CV_PI/512, 35, 0, 0 );
                 cvtColor(faceRect,faceRect, CV_GRAY2BGR);
 
                 vector<Vec2f> sampledOpenCVLines = sample(opencvlines, 150);
@@ -275,12 +275,23 @@ int main( int argc, const char** argv )
                 //{
                   //float rho0 = opencvlines[i][0], theta0 = opencvlines[i][1];
                   intersections = LineIntersection::fromLines(sampledOpenCVLines, 2.0, 1);
+                 // intersections
                 //}
-
-                  for (const LineIntersection &intersection: intersections)
+                  int biggestCount = 0;
+                  LineIntersection biggest(0,0);
+                  for ( LineIntersection &intersection: intersections)
                   {
-                      cv::circle(input_with_overlay, cv::Point(intersection.position[0], intersection.position[1]), 4, cv::Scalar(255, 0, 0), -1);
+                      if(intersection.count > biggestCount)
+                      {
+                          biggestCount = intersection.count;
+                          biggest = intersection;
+                      }
+                      //intersection.position[0] += detection.x; intersection.position[1] += detection.y;
+                      //cv::circle(input_with_overlay, cv::Point(intersection.position[0], intersection.position[1]), 4, cv::Scalar(255, 0, 0), -1);
                   }
+
+                  biggest.position[0] += detection.x; biggest.position[1] += detection.y;
+                  cv::circle(input_with_overlay, cv::Point(biggest.position[0], biggest.position[1]), 4, cv::Scalar(255, 0, 0), -1);
 
                 std::cout << "The intersections list has " << intersections.size() << "members..." << std::endl;
 
