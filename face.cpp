@@ -140,7 +140,7 @@ int main( int argc, const char** argv )
         //NamedImage(face_mask, "face_mask").show();
 
 
-        /*cv::Mat mag, dir;
+        cv::Mat mag, dir;
 
         sobel(input_gray, mag, dir, 5);
 
@@ -182,10 +182,10 @@ int main( int argc, const char** argv )
 
         cv::Mat masked_mag;
 
-        thresholded_mag.copyTo(masked_mag, mag_mask);\*/
+        thresholded_mag.copyTo(masked_mag, mag_mask);
 
     //THIS SECTION PERFORMS SAM'S CIRCLE HOUGH TRANSFORM
-        /*std::vector<int> hough_space_size = {HOUGH_CIRCLE_R_RESOLUTION, HOUGH_CIRCLE_AB_RESOLUTION, HOUGH_CIRCLE_AB_RESOLUTION};
+        std::vector<int> hough_space_size = {HOUGH_CIRCLE_R_RESOLUTION, HOUGH_CIRCLE_AB_RESOLUTION, HOUGH_CIRCLE_AB_RESOLUTION};
 
         cv::Mat hough_space(hough_space_size.size(), &(hough_space_size[0]), CV_32S, cv::Scalar(0));
 
@@ -197,23 +197,37 @@ int main( int argc, const char** argv )
 
         double rMax = HOUGH_RMAX_RATIO * (minRect[0] > minRect[1] ? minRect[0] : minRect[1]) / 2.0;
 
-        std::vector<cv::Vec4d> circles = houghCircle(masked_mag, dir, hough_space, rMin, rMax, HOUGH_CIRCLE_THRESHOLD);
+        std::vector<cv::Vec4d> circles = houghCircle(masked_mag, dir, hough_space, rMin, rMax, 0.05);
 
         std::vector<cv::Vec4d> filtered_circles = filterList(circles, prunedFaceDetections, FILTER_MINDISTANCE);
 
+        cv::Mat houghRepresentation = input.clone();
+        cv::Mat temp = input.clone();
+        cv::cvtColor(temp, temp, CV_BGR2GRAY); cv::cvtColor(houghRepresentation, houghRepresentation, CV_BGR2GRAY);
+
+        houghRepresentation.setTo( cv::Scalar(0) );
+        temp.setTo( cv::Scalar(0) );
+
+        std::cout << circles.size() << std::endl;
         for (auto &circle: circles)
         {
-            cv::circle(input_with_overlay, cv::Point(circle[0], circle[1]), circle[2], cvScalar(255, 0, 255), 2);
+            temp.setTo(Scalar(0));
+            cv::circle(temp, cv::Point(circle[0], circle[1]), circle[2], cvScalar(1), 1);
+            houghRepresentation = houghRepresentation + temp;
+            //cv::circle(input_with_overlay, cv::Point(circle[0], circle[1]), circle[2], cvScalar(1, 0, 1), 2);
         }
+
+        //NamedImage(houghRepresentation, "hough Representation mate...").show();
+        imwrite("houghRep-0.05-POOP-thresh-no-lerp.jpg",houghRepresentation);
 
         for (auto &circle: filtered_circles)
         {
             cv::circle(input_with_overlay, cv::Point(circle[0], circle[1]), circle[2], cvScalar(0, 255, 0), 2);
-        }*/
+        }
     //END OF SAM'S HOUGH
 
     //START OF OPENCV CIRCLE HOUGH TRANSFORM
-
+    /*
         //cv::GaussianBlur( face_mask_source, face_mask_source, Size(9, 9), 2, 2 );
         std::vector<cv::Vec3f> opencvcircles;
         int imagesplit = face_mask_source.cols;
@@ -227,9 +241,11 @@ int main( int argc, const char** argv )
 
           circle( input_with_overlay, center, radius, Scalar(0,0,255), 3, 8, 0 );
         }
+    */
     //END OF OPENCV HOUGH CIRCLE TRANSFORM
 
     //THIS SECTION CHECKS TO SEE IF A FACE HAS A CIRCLE CENTER IN IT, AND IF IT DOES, IT RUNS THE LINE DETECTOR ON IT AND DRAWS THE LINES MATE...
+    /*
         //cv::Mat face_mask_source = imread(argv[imageNum], CV_LOAD_IMAGE_GRAYSCALE);
         //int i=0;
         //for (Rect detection : prunedFaceDetections)
@@ -300,6 +316,7 @@ int main( int argc, const char** argv )
 
         }
     //END OF SECTION THAT DRAWS LINES IN FACES THAT HAVE A CIRCLE IN THEM...
+    */
 
         std::stringstream name;
         name << "lines+circles+pruningtest-" << imageID << ".jpg";
