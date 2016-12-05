@@ -237,7 +237,7 @@ int main( int argc, const char** argv )
         {
             cv::Rect detection = prunedFaceDetections[closestRect( opencvcircles[i][0], opencvcircles[i][1], prunedFaceDetections)];
             std::cout << "closest face detection index = " << prunedFaceDetections[ closestRect( opencvcircles[i][0], opencvcircles[i][1], prunedFaceDetections) ] << std::endl ;
-            cv::rectangle(input_with_overlay, detection, cv::Scalar( 255, 255, 255 ), 2);
+            //cv::rectangle(input_with_overlay, detection, cv::Scalar( 255, 255, 255 ), 2);
 
                 ///////////////////////////////////////////
                 cv::Mat faceRect = face_mask_source(detection).clone();
@@ -292,6 +292,9 @@ int main( int argc, const char** argv )
 
                   biggest.position[0] += detection.x; biggest.position[1] += detection.y;
                   cv::circle(input_with_overlay, cv::Point(biggest.position[0], biggest.position[1]), 4, cv::Scalar(255, 0, 0), -1);
+                  detection.x = biggest.position[0]-detection.width/2;
+                  detection.y = biggest.position[1]-detection.height/2;
+                  cv::rectangle(input_with_overlay, detection, cv::Scalar( 0, 255, 255 ), 2);
 
                 std::cout << "The intersections list has " << intersections.size() << "members..." << std::endl;
 
