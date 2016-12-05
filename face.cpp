@@ -252,7 +252,7 @@ int main( int argc, const char** argv )
                 vector<Vec2f> opencvlines;
                 blur( faceRect, faceRect, Size(3,3) );
                 Canny(faceRect, faceRect, 50, 150, 3);
-                HoughLines(faceRect, opencvlines, 1, CV_PI/512, 100, 0, 0 );
+                HoughLines(faceRect, opencvlines, 1, CV_PI/512, 80, 0, 0 );
                 cvtColor(faceRect,faceRect, CV_GRAY2BGR);
                 for( size_t i = 0; i < opencvlines.size(); i++ )
                 {
@@ -271,8 +271,12 @@ int main( int argc, const char** argv )
                 //for( size_t i = 0; i < opencvlines.size(); i++ )
                 //{
                   //float rho0 = opencvlines[i][0], theta0 = opencvlines[i][1];
-                  intersections = LineIntersection::fromLines(opencvlines, 2.0,1);
-                //}
+                  intersections = LineIntersection::fromLines(opencvlines, 5.0,1);
+                  for(LineIntersection intersection : intersections)
+                  {
+                      cv::circle( input_with_overlay, cv::Point(intersection.position[0],intersection.position[1]), 2, Scalar(0,0,255), 3, 8, 0 );
+                      std::cout << intersection.position << std::endl;
+                  }
                 std::cout << "The intersections list has " << intersections.size() << "members..." << std::endl;
 
                 std::cout << "The number of lines is!: " << opencvlines.size() << std::endl;
