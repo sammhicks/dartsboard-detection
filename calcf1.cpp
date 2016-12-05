@@ -33,9 +33,9 @@ void truePositive(std::vector<cv::Rect> &groundTruth, std::vector<cv::Rect> &fac
             if(intersection.width && intersection.height)
             {
                 ratio = (intersection.width*intersection.height)/(double)( g.width*g.height + f.width*f.height - (intersection.width*intersection.height));
-                bool isCentreFine = centresThresh(g, f, F1_THRESHOLD/2);
+                bool isCentreFine = centresThresh(g, f, F1_THRESHOLD/4);
                 double variableThresh = F1_THRESHOLD;
-                if(isCentreFine) variableThresh = 0.2;
+                if(isCentreFine) variableThresh = 0.35;
                 if (ratio >= variableThresh && isCentreFine)
                 {
                     if (extra == 0)
