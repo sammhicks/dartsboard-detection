@@ -20,7 +20,7 @@ std::vector<cv::Rect> detectAndDisplay(cv::Mat &input, cv::CascadeClassifier &ca
         cv::rectangle(input, cv::Point(prunedFaces[i].x, prunedFaces[i].y), cv::Point(prunedFaces[i].x + prunedFaces[i].width, prunedFaces[i].y + prunedFaces[i].height), cv::Scalar( 0, 255, 0 ), 2);
     }*/
     //std::cout << "f1 score: " << calcf1(ground, faces, trueNumber) << std::endl;
-    std::cout << calcf1(ground, prunedFaces, trueNumber) << std::endl;
+    //std::cout << calcf1(ground, prunedFaces, trueNumber) << std::endl;
 
     return prunedFaces;
 }

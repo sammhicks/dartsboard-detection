@@ -66,7 +66,7 @@ int main( int argc, const char** argv )
 
         for(const cv::Rect &face: prunedFaceDetections)
         {
-            cv::rectangle(input_with_overlay, face, cv::Scalar( 0, 255, 0 ), 2);
+            //cv::rectangle(input_with_overlay, face, cv::Scalar( 0, 255, 0 ), 2);
         }
 
     //MASK out all section that are not within a 'face' detection to black
@@ -217,15 +217,19 @@ int main( int argc, const char** argv )
         //cv::GaussianBlur( face_mask_source, face_mask_source, Size(9, 9), 2, 2 );
         std::vector<cv::Vec3f> opencvcircles;
         int imagesplit = face_mask_source.cols;
-        double threshy = 0.1;
-        if(face_mask_source.rows > face_mask_source.cols) imagesplit = face_mask_source.rows; threshy = 0.7;
+        double threshy = 0.7;
+        if(face_mask_source.rows > face_mask_source.cols)
+        {
+            imagesplit = face_mask_source.rows;
+            threshy = 0.7;
+        }
         cv::HoughCircles( face_mask, opencvcircles, CV_HOUGH_GRADIENT, 1, imagesplit*threshy, 100, 30, 20, 70 );
         for( std::size_t i = 0; i < opencvcircles.size(); i++ )
         {
           cv::Point center(cvRound(opencvcircles[i][0]), cvRound(opencvcircles[i][1]));
           int radius = cvRound(opencvcircles[i][2]);
 
-          circle( input_with_overlay, center, radius, Scalar(0,0,255), 3, 8, 0 );
+          //circle( input_with_overlay, center, radius, Scalar(0,0,255), 3, 8, 0 );
         }
     //END OF OPENCV HOUGH CIRCLE TRANSFORM
 
@@ -233,10 +237,11 @@ int main( int argc, const char** argv )
         //cv::Mat face_mask_source = imread(argv[imageNum], CV_LOAD_IMAGE_GRAYSCALE);
         //int i=0;
         //for (Rect detection : prunedFaceDetections)
+        std::vector<cv::Rect> finalOut;
         for( std::size_t i = 0; i < opencvcircles.size(); i++ )
         {
             cv::Rect detection = prunedFaceDetections[closestRect( opencvcircles[i][0], opencvcircles[i][1], prunedFaceDetections)];
-            std::cout << "closest face detection index = " << prunedFaceDetections[ closestRect( opencvcircles[i][0], opencvcircles[i][1], prunedFaceDetections) ] << std::endl ;
+            //std::cout << "closest face detection index = " << prunedFaceDetections[ closestRect( opencvcircles[i][0], opencvcircles[i][1], prunedFaceDetections) ] << std::endl ;
             //cv::rectangle(input_with_overlay, detection, cv::Scalar( 255, 255, 255 ), 2);
 
                 ///////////////////////////////////////////
@@ -246,7 +251,7 @@ int main( int argc, const char** argv )
                 cv::Scalar rectMean, rectStddev;
                 cv::meanStdDev(faceRect, rectMean, rectStddev);  //find the mean and stddev of the image
                 double rectSTD = rectStddev[0];
-                std::cout << "standard deviation of the 'face' that has a circle in it... " << rectSTD << std::endl;
+                //std::cout << "standard deviation of the 'face' that has a circle in it... " << rectSTD << std::endl;
 
                 //cv::Mat maskRect = face_mask(detection);
                 //inputRect.copyTo(maskRect);
@@ -267,7 +272,7 @@ int main( int argc, const char** argv )
                   pt1.y = cvRound(y0 + 1000*(a));
                   pt2.x = cvRound(x0 - 1000*(-b));
                   pt2.y = cvRound(y0 - 1000*(a));
-                  line( softCopy, pt1, pt2, Scalar(0,255,0), 1, CV_AA);
+                  //line( softCopy, pt1, pt2, Scalar(0,255,0), 1, CV_AA);
                 }
                 //Now we need to find the intersections of those lines... First loop through and make a fookin vector of intersections mate...
                 std::list<LineIntersection> intersections;
@@ -291,17 +296,19 @@ int main( int argc, const char** argv )
                   }
 
                   biggest.position[0] += detection.x; biggest.position[1] += detection.y;
-                  cv::circle(input_with_overlay, cv::Point(biggest.position[0], biggest.position[1]), 4, cv::Scalar(255, 0, 0), -1);
+                  //cv::circle(input_with_overlay, cv::Point(biggest.position[0], biggest.position[1]), 4, cv::Scalar(255, 0, 0), -1);
                   detection.x = biggest.position[0]-detection.width/2;
                   detection.y = biggest.position[1]-detection.height/2;
                   cv::rectangle(input_with_overlay, detection, cv::Scalar( 0, 255, 255 ), 2);
+                  finalOut.push_back(detection);
 
-                std::cout << "The intersections list has " << intersections.size() << "members..." << std::endl;
+                //std::cout << "The intersections list has " << intersections.size() << "members..." << std::endl;
 
-                std::cout << "The number of lines is!: " << opencvlines.size() << std::endl;
+                //std::cout << "The number of lines is!: " << opencvlines.size() << std::endl;
 
 
         }
+        std::cout << "Image: " << imageID << " F1 score: " << calcf1(dartsGT[imageID],finalOut,dartNumbersGT[imageID]) << std::endl;
     //END OF SECTION THAT DRAWS LINES IN FACES THAT HAVE A CIRCLE IN THEM...
 
         std::stringstream name;
