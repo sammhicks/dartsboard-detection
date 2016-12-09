@@ -325,7 +325,7 @@ int main( int argc, const char** argv )
 
 
         }
-        std::cout << "Image: " << imageID << " F1 score: " << calcf1(dartsGT[imageID],finalOut,dartNumbersGT[imageID]) << std::endl;
+        //std::cout << "Image: " << imageID << " F1 score: " << calcf1(dartsGT[imageID],finalOut,dartNumbersGT[imageID]) << std::endl;
     //END OF SECTION THAT DRAWS LINES IN FACES THAT HAVE A CIRCLE IN THEM...
 
         std::stringstream name;
